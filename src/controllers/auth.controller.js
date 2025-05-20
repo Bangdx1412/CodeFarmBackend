@@ -6,6 +6,7 @@ import {JWT_SECRET} from "../configs/enviroments.js"
 import {sendEmail} from "../utils/sendMail.js";
 
 const authController = {
+  // REGISTER
   register: async (req, res) => {
     try {
       const { email, password, fullName } = req.body;
@@ -37,12 +38,11 @@ const authController = {
         fullName,
         token: verificationToken,
         status: "pending",
-        role_id: "user"
+        admin: false,
       });
 
       await newAccount.save();
 
-      // Gửi email xác thực
       const verificationLink = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
       const subject = "Xác thực email của bạn";
       const html = `
@@ -58,7 +58,11 @@ const authController = {
       res.status(201).json({
         status: true,
         message: "Tài khoản được tạo thành công. Vui lòng kiểm tra email để xác thực tài khoản.",
-        data: newAccount,
+        data: {
+          email: newAccount.email,
+          fullName: newAccount.fullName,
+          status: newAccount.status
+        },
         statusCode: 201
       });
 
@@ -70,29 +74,58 @@ const authController = {
       });
     }
   },
-
+  // VERIFY EMAIL
   verifyEmail: async (req, res) => {
     try {
       const { token } = req.params;
 
-      const decoded = jwt.verify(token, JWT_SECRET);
+      if (!token) {
+        return res.status(400).json({
+          status: false,
+          message: "Token không được cung cấp",
+          statusCode: 400
+        });
+      }
+
+      let decoded;
+      try {
+        decoded = jwt.verify(token, JWT_SECRET);
+      } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+          return res.status(400).json({
+            status: false,
+            message: "Link xác thực đã hết hạn. Vui lòng yêu cầu gửi lại email xác thực.",
+            statusCode: 400
+          });
+        }
+        if (error.name === 'JsonWebTokenError') {
+          return res.status(400).json({
+            status: false,
+            message: "Token không hợp lệ",
+            statusCode: 400
+          });
+        }
+        throw error;
+      }
+
       const { email } = decoded;
 
       const account = await Account.findOne({ 
-        email, 
-        token,
+        email,
+        status: "pending",
         deleted: false 
       });
 
       if (!account) {
         return res.status(400).json({
           status: false,
-          message: "Token không hợp lệ hoặc đã hết hạn",
+          message: "Không tìm thấy tài khoản cần xác thực",
           statusCode: 400
         });
       }
       account.status = "active";
       account.token = null;
+      account.updatedAt = new Date();
       await account.save();
 
       res.status(200).json({
@@ -102,22 +135,15 @@ const authController = {
       });
 
     } catch (error) {
-      if (error.name === 'TokenExpiredError') {
-        return res.status(400).json({
-          status: false,
-          message: "Link xác thực đã hết hạn. Vui lòng đăng ký lại.",
-          statusCode: 400
-        });
-      }
-
+      console.error('Verify Email Error:', error);
       return res.status(500).json({
         status: false,
-        message: "Lỗi server",
+        message: "Lỗi server trong quá trình xác thực email",
         statusCode: 500
       });
     }
   },
-
+  // RESEND VERIFICATION
   resendVerification: async (req, res) => {
     try {
       const { email } = req.body;
@@ -145,7 +171,7 @@ const authController = {
       }
 
       const newVerificationToken = jwt.sign({ email }, JWT_SECRET, { expiresIn: '15m' });
-
+      
       account.token = newVerificationToken;
       await account.save();
 
@@ -174,7 +200,193 @@ const authController = {
         statusCode: 500
       });
     }
+  },
+  // GENERATE ACCSET TOKEN
+  generateAccessToken: (account) => {
+    return jwt.sign(
+      { 
+        id: account._id,
+        email: account.email,
+        admin: account.admin
+      }, 
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+  },
+  // GENERATE REFRESH TOKEN
+  generateRefreshToken:  (account) => {
+    return jwt.sign(
+      { 
+        id: account._id,
+        admin: account.admin    
+      },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+  },
+  // LOGIN
+  login: async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({
+          status: false,
+          message: "Vui lòng điền đầy đủ thông tin",
+          statusCode: 400
+        });
+      }
+      const account = await Account.findOne({ 
+        email, 
+        status: "active",
+        deleted: false 
+      });
+
+      if (!account) {
+        return res.status(400).json({
+          status: false,
+          message: "Email hoặc mật khẩu không đúng",
+          statusCode: 400
+        });
+      }
+      const isPasswordValid = await bcrypt.compare(password, account.password);
+      if (!isPasswordValid) {
+        return res.status(400).json({
+          status: false,
+          message: "Email hoặc mật khẩu không đúng",
+          statusCode: 400
+        });
+      }
+
+      const accessToken = authController.generateAccessToken(account);
+      const refreshToken = authController.generateRefreshToken(account);
+
+      try {
+        await RefreshToken.deleteMany({ user_id: account._id });
+        const refreshTokenDoc = new RefreshToken({
+          user_id: account._id,
+          token: refreshToken,
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 ngày
+        });
+
+        await refreshTokenDoc.save();
+
+        // Set refresh token vào cookie
+        res.cookie('refreshToken', refreshToken, {
+          httpOnly: true,
+          secure: false,
+          sameSite: 'strict',
+          path: '/',
+          maxAge: 30 * 24 * 60 * 60 * 1000 // 30 ngày
+        });
+
+        const accountResponse = account.toObject();
+        delete accountResponse.password;
+
+        res.status(200).json({
+          status: true,
+          message: "Đăng nhập thành công",
+          data: {
+            account: accountResponse,
+            accessToken
+          },
+          statusCode: 200
+        });
+
+      } catch (error) {
+        console.error('Refresh Token Error:', error);
+        return res.status(500).json({
+          status: false,
+          message: "Lỗi khi xử lý refresh token",
+          statusCode: 500
+        });
+      }
+
+    } catch (error) {
+      console.error('Refresh Token Error:', error);
+      return res.status(500).json({
+        status: false,
+        message: "Lỗi server",
+        statusCode: 500
+      });
+    }
+  },
+  // REFRESH TOKEN
+  refreshToken: async (req, res) => {
+    try {
+      const {refreshToken} = req.body;
+      
+      if (!refreshToken) {
+        return res.status(401).json({
+          status: false,
+          message: "Không tìm thấy refresh token",
+          statusCode: 401
+        });
+      }
+
+      // Kiểm tra refresh token trong database
+      const tokenDoc = await RefreshToken.findOne({
+        token: refreshToken,
+        expiresAt: { $gt: new Date() }
+      });
+
+      if (!tokenDoc) {
+        return res.status(401).json({
+          status: false,
+          message: "Refresh token không tồn tại hoặc đã hết hạn",
+          statusCode: 401
+        });
+      }
+
+      const account = await Account.findOne({
+        _id: tokenDoc.user_id,
+        deleted: false
+      });
+
+      if (!account) {
+        return res.status(401).json({
+          status: false,
+          message: "Không tìm thấy tài khoản",
+          statusCode: 401
+        });
+      }
+
+      // Verify refresh token
+      try {
+        jwt.verify(refreshToken, JWT_SECRET);
+      } catch (error) {
+        // Nếu token không hợp lệ, xóa khỏi database và cookie
+        await RefreshToken.deleteOne({ _id: tokenDoc._id });
+        res.clearCookie('refreshToken');
+        return res.status(401).json({
+          status: false,
+          message: "Refresh token không hợp lệ",
+          statusCode: 401
+        });
+      }
+
+      // Tạo access token mới
+      const newAccessToken = authController.generateAccessToken(account);
+
+      res.status(200).json({
+        status: true,
+        message: "Làm mới token thành công",
+        data: {
+          accessToken: newAccessToken
+        },
+        statusCode: 200
+      });
+
+    } catch (error) {
+      console.error('Refresh Token Error:', error);
+      return res.status(500).json({
+        status: false,
+        message: "Lỗi server",
+        statusCode: 500
+      });
+    }
   }
+  
 };
 
 export default authController;
