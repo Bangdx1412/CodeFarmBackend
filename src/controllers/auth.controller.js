@@ -117,6 +117,64 @@ const authController = {
       });
     }
   },
+
+  resendVerification: async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({
+          status: false,
+          message: "Vui lòng cung cấp email",
+          statusCode: 400
+        });
+      }
+
+      const account = await Account.findOne({ 
+        email, 
+        status: "pending",
+        deleted: false 
+      });
+
+      if (!account) {
+        return res.status(400).json({
+          status: false,
+          message: "Không tìm thấy tài khoản chưa xác thực với email này",
+          statusCode: 400
+        });
+      }
+
+      const newVerificationToken = jwt.sign({ email }, JWT_SECRET, { expiresIn: '15m' });
+
+      account.token = newVerificationToken;
+      await account.save();
+
+      const verificationLink = `${process.env.FRONTEND_URL}/verify-email/${newVerificationToken}`;
+      const subject = "Xác thực email của bạn";
+      const html = `
+        <h1>Xin chào ${account.fullName},</h1>
+        <h2>Chúng tôi đã nhận được yêu cầu gửi lại email xác thực</h2>
+        <h3>Vui lòng click vào link sau để xác thực email của bạn:</h3>
+        <p>Lưu ý: Link xác thực này sẽ hết hạn sau 15 phút!</p>
+        <a href="${verificationLink}">Xác thực email</a>
+      `;
+
+      await sendEmail(email, subject, html);
+
+      res.status(200).json({
+        status: true,
+        message: "Đã gửi lại email xác thực. Vui lòng kiểm tra hộp thư của bạn.",
+        statusCode: 200
+      });
+
+    } catch (error) {
+      return res.status(500).json({
+        status: false,
+        message: "Lỗi server",
+        statusCode: 500
+      });
+    }
+  }
 };
 
 export default authController;

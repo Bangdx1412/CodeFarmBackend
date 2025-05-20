@@ -4,5 +4,6 @@ const routes = Router();
 
 routes.post("/register", authController.register);
 routes.get("/verify-email/:token", authController.verifyEmail);
+routes.post("/resend-verification", authController.resendVerification);
 
 export default routes;
