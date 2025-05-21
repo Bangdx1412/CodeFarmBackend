@@ -273,17 +273,17 @@ const authController = {
         const refreshTokenDoc = new RefreshToken({
           user_id: account._id,
           token: refreshToken,
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 ngày
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
         });
 
         await refreshTokenDoc.save();
 
-        // Set refresh token vào cookie
         res.cookie('refreshToken', refreshToken, {
           httpOnly: true,
           secure: false,
           sameSite: 'strict',
           path: '/',
+          maxAge: 30 * 24 * 60 * 60 * 1000
         });
 
         const accountResponse = account.toObject();
@@ -360,14 +360,18 @@ const authController = {
       try {
         jwt.verify(refreshToken, JWT_SECRET);
       } catch (error) {
-        // Nếu token không hợp lệ, xóa khỏi database và cookie
-        await RefreshToken.deleteOne({ _id: tokenDoc._id });
-        res.clearCookie('refreshToken');
-        return res.status(401).json({
-          status: false,
-          message: "Refresh token không hợp lệ",
-          statusCode: 401
-        });
+        //xóa token nếu là lỗi JWT cụ thể
+        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+          await RefreshToken.deleteOne({ _id: tokenDoc._id });
+          res.clearCookie('refreshToken');
+          return res.status(401).json({
+            status: false,
+            message: error.name === 'TokenExpiredError' ? "Refresh token đã hết hạn" : "Refresh token không hợp lệ",
+            statusCode: 401
+          });
+        }
+        // Nếu là lỗi khác, không xóa token
+        throw error;
       }
 
       // Tạo access token mới
@@ -454,12 +458,7 @@ const authController = {
   // RESET PASSWORD
   resetPassword: async (req, res) => {
     try {
-      console.log('Request body:', req.body);
       const { email, otp, password } = req.body;
-      console.log(email);
-      console.log(otp);
-      console.log(password);
-      
       if (!email || !otp || !password) {
         return res.status(400).json({
           status: false,
@@ -471,7 +470,7 @@ const authController = {
       const forgotPassword = await ForgotPassword.findOne({
         email: email,
         otp: otp,
-        expireAt: { $gt: Date.now() - 5 * 60 * 1000 } // OTP hết hạn sau 5 phút
+        expireAt: { $gt: Date.now() - 5 * 60 * 1000 }
       });
 
       if (!forgotPassword) {
@@ -499,7 +498,7 @@ const authController = {
 
       account.password = hashPassword;
       await account.save();
-
+      
       await ForgotPassword.deleteOne({ _id: forgotPassword._id });
 
       res.status(200).json({
