@@ -11,4 +11,6 @@ routes.post("/login", authController.login);
 
 routes.post("/refresh-token", checkPermission.verifyToken, authController.refreshToken);
 
+routes.post("/forgot-password", authController.forgotPassword);
+routes.post("/reset-password", authController.resetPassword);
 export default routes;

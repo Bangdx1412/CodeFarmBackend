@@ -1,9 +1,16 @@
 import Account from "../models/Account.model.js";
 import RefreshToken from "../models/RefreshToken.model.js";
+import ForgotPassword from "../models/ForgotPassword.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {JWT_SECRET} from "../configs/enviroments.js"
 import {sendEmail} from "../utils/sendMail.js";
+
+
+// Hàm tạo OTP ngẫu nhiên
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
 const authController = {
   // REGISTER
@@ -385,8 +392,131 @@ const authController = {
         statusCode: 500
       });
     }
+  },
+  forgotPassword: async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({
+          status: false,
+          message: "Vui lòng cung cấp email",
+          statusCode: 400
+        });
+      }
+      const account = await Account.findOne({
+        email: email,
+        deleted: false
+      });
+
+      if (!account) {
+        return res.status(400).json({
+          status: false,
+          message: "Không tìm thấy tài khoản với email này",
+          statusCode: 400
+        });
+      }
+
+      const otp = generateOTP();
+      const expireAt = new Date(Date.now() + 5 * 60 * 1000); // Hết hạn sau 5 phút
+
+      await ForgotPassword.findOneAndUpdate(
+        { email: email },
+        { otp, expireAt },
+        { upsert: true, new: true }
+      );
+     
+      const subject = 'Đặt lại mật khẩu';
+       const html= `
+          <h1>Yêu cầu đặt lại mật khẩu</h1>
+          <p>Mã OTP của bạn là: <strong>${otp}</strong></p>
+          <p>Mã OTP này sẽ hết hạn sau 5 phút.</p>
+          <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+        `
+    
+
+      await sendEmail(email,subject,html );
+
+      res.status(200).json({
+        status: true,
+        message: "Mã OTP đã được gửi đến email của bạn",
+        statusCode: 200
+      });
+
+    } catch (error) {
+      console.error('Forgot Password Error:', error);
+      return res.status(500).json({
+        status: false,
+        message: "Lỗi server",
+        statusCode: 500
+      });
+    }
+  },
+  resetPassword: async (req, res) => {
+    try {
+      console.log('Request body:', req.body);
+      const { email, otp, password } = req.body;
+      console.log(email);
+      console.log(otp);
+      console.log(password);
+      
+      if (!email || !otp || !password) {
+        return res.status(400).json({
+          status: false,
+          message: "Vui lòng cung cấp đầy đủ thông tin",
+          statusCode: 400
+        });
+      }
+
+      const forgotPassword = await ForgotPassword.findOne({
+        email: email,
+        otp: otp,
+        expireAt: { $gt: Date.now() - 5 * 60 * 1000 } // OTP hết hạn sau 5 phút
+      });
+
+      if (!forgotPassword) {
+        return res.status(400).json({
+          status: false,
+          message: "Mã OTP không hợp lệ hoặc đã hết hạn",
+          statusCode: 400
+        });
+      }
+
+      const account = await Account.findOne({
+        email: email,
+        deleted: false
+      });
+
+      if (!account) {
+        return res.status(400).json({
+          status: false,
+          message: "Không tìm thấy tài khoản",
+          statusCode: 400
+        });
+      }
+
+      const hashPassword = await bcrypt.hash(password, 10);
+
+      account.password = hashPassword;
+      await account.save();
+
+      await ForgotPassword.deleteOne({ _id: forgotPassword._id });
+
+      res.status(200).json({
+        status: true,
+        message: "Đặt lại mật khẩu thành công",
+        statusCode: 200
+      });
+
+    } catch (error) {
+      console.error('Reset Password Error:', error);
+      return res.status(500).json({
+        status: false,
+        message: "Lỗi server",
+        statusCode: 500
+      });
+    }
   }
-  
 };
 
 export default authController;
