@@ -3,11 +3,13 @@ import slug from "mongoose-slug-updater";
 mongoose.plugin(slug);
 const productSchema = new mongoose.Schema({
 	title: String,
-	product_category_id: 
-	{
-		type: String,
-		default:""
-	},
+	product_category_ids: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Category"
+  }
+],
+
 	description: {
 		type: String,
 		default:""

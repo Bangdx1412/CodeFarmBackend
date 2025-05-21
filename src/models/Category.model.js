@@ -16,12 +16,15 @@ const categorySchema = new mongoose.Schema({
         slug: "title",
         unique: true,
       },
+	   is_active: {       
+        type: Boolean,
+        default: true
+    },
 	deleted: {
         type: Boolean,
         default: false
     },
 	deletedAt: Date,
   },{timestamps: true, versionKey: false});
-const Cateogry = mongoose.model("Cateogry", categorySchema,"categories");
-
-export default Cateogry;
+const Category = mongoose.model("Category", categorySchema, "categories");
+export default Category;

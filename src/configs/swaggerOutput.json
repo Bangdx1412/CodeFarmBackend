@@ -425,21 +425,27 @@
 			}
 		},
 		"/products/": {
-			"get": {
-				"description": "",
-				"parameters": [
-					{
-						"name": "includeDeleted",
-						"in": "query",
-						"type": "string"
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				}
-			},
+		"get": {
+  "description": "Lấy danh sách sản phẩm, có thể tìm kiếm theo tên.",
+  "parameters": [
+    {
+      "name": "includeDeleted",
+      "in": "query",
+      "type": "string"
+    },
+    {
+      "name": "search",
+      "in": "query",
+      "type": "string",
+      "description": "Tìm kiếm theo tên sản phẩm"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "OK"
+    }
+  }
+},
 			"post": {
 				"description": "",
 				"parameters": [

@@ -1,11 +1,22 @@
-import { Router } from "express";
-import productController from "../controllers/product.controller.js";
-const routes = Router();
+import express from "express";
+import {
+  getProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct, // xoá mềm
+  forceDeleteProduct, // xoá vĩnh viễn (nếu muốn)
+  restoreProduct // khôi phục (nếu muốn)
+ 
+} from "../controllers/product.controller.js";
 
-routes.get("/", productController.getProducts);
-// routes.use("/products", hanldeProduct...)
-// routes.use("/products", hanldeProduct...)
-// routes.use("/products", hanldeProduct...)
-// routes.use("/products", hanldeProduct...)
+const router = express.Router();
 
-export default routes;
+router.get("/", getProducts);
+router.post("/", createProduct);
+router.put("/:id", updateProduct);
+// router.delete("/:id", deleteProduct);
+router.delete("/soft-delete/:id", deleteProduct); // <-- Xoá mềm
+router.delete("/force-delete/:id", forceDeleteProduct); // <-- Xoá vĩnh viễn
+router.patch("/restore/:id", restoreProduct); // <-- Khôi phục
+
+export default router;
