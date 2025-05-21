@@ -1,58 +1,57 @@
 import Category from "../models/Category.model.js";
+import { sendSuccess } from "../middlewares/success.middleware.js";
+import asyncHandler from "../middlewares/asyncHandler.js";
 
-const categoryController = {
-  getCategories: async (req, res) => {
-    try {
-      const categories = await Category.find();
-      if (categories) {
-        res.status(200).json(categories);
-      }
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  },
-  createCategory: async (req, res) => {
-    try {
-      const category = await new Category(req.body);
-      category.save();
-      res.status(200).json({
-        message: "Thêm thành công",
-        category: category,
-      });
-    } catch (error) {}
-  },
-  updateCategory: async (req, res) => {
-    try {
-      const id = req.params.id;
-      const category = await Category.findOne({ _id: id });
-      if (!category) {
-        return res.status(404).json({ message: "Không tìm thấy danh mục" });
-      }
-      if (category) {
-        const updateCate = await Category.findByIdAndUpdate(id, req.body, {
-          new: true,
-        });
-        res
-          .status(200)
-          .json({ message: "Cập nhật thành công", data: updateCate });
-      }
-    } catch (error) {
-      res.status(500).json({ message: "Đã xảy ra lỗi server" });
-    }
-  },
-  deleteCate: async (req, res) => {
-    try {
-      const id = req.params.id;
-      const cate = await Category.findOne({ _id: id });
-      if (!cate) {
-        return res.status(404).json({ message: "Không tìm thấy danh mục" });
-      }
+// Lấy danh sách danh mục
+export const getCategories = asyncHandler(async (req, res) => {
+  const { search, page = 1, limit = 10 } = req.query;
 
-      const deleteCate = await Category.findByIdAndDelete({ _id: id });
-      res.status(200).json({ message: "Xóa thành công", data: deleteCate });
-    } catch (error) {
-      res.status(500).json({ message: "Đã xảy ra lỗi server" });
-    }
-  },
-};
-export default categoryController;
+  const query = search
+    ? { title: { $regex: search, $options: "i" } }
+    : {};
+
+  const total = await Category.countDocuments(query);
+
+  const categories = await Category.find(query)
+    .sort({ createdAt: -1 }) // Sắp xếp theo DESC 
+    .skip((page - 1) * limit)
+    .limit(Number(limit));
+
+  sendSuccess(
+    res,
+    {
+      categories,
+      total,
+      limit: Number(limit),
+      currentPage: Number(page),
+    },
+    "Lấy danh sách danh mục thành công"
+  );
+});
+
+// Thêm danh mục mới
+export const createCategory = asyncHandler(async (req, res) => {
+  const { title } = req.body;
+  if (!title || title.trim() === "") {
+    throw new Error("Tên danh mục không được để trống");
+  }
+  const category = await Category.create({ title });
+  sendSuccess(res, category, "Thêm danh mục thành công");
+});
+
+// Cập nhật danh mục
+export const updateCategory = asyncHandler(async (req, res) => {
+  const id = req.params.id;
+  const { title } = req.body;
+  const updated = await Category.findByIdAndUpdate(id, { title }, { new: true });
+  if (!updated) throw new Error("Không tìm thấy danh mục");
+  sendSuccess(res, updated, "Cập nhật danh mục thành công");
+});
+
+// Xóa danh mục
+export const deleteCategory = asyncHandler(async (req, res) => {
+  const id = req.params.id;
+  const deleted = await Category.findByIdAndDelete(id);
+  if (!deleted) throw new Error("Không tìm thấy danh mục để xóa");
+  sendSuccess(res, deleted, "Xóa danh mục thành công");
+});
