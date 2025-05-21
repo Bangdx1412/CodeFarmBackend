@@ -284,7 +284,6 @@ const authController = {
           secure: false,
           sameSite: 'strict',
           path: '/',
-          maxAge: 30 * 24 * 60 * 60 * 1000 // 30 ngày
         });
 
         const accountResponse = account.toObject();
@@ -331,7 +330,6 @@ const authController = {
         });
       }
 
-      // Kiểm tra refresh token trong database
       const tokenDoc = await RefreshToken.findOne({
         token: refreshToken,
         expiresAt: { $gt: new Date() }
@@ -393,6 +391,7 @@ const authController = {
       });
     }
   },
+  // FORGOT PASSWORD
   forgotPassword: async (req, res) => {
     try {
       const { email } = req.body;
@@ -452,6 +451,7 @@ const authController = {
       });
     }
   },
+  // RESET PASSWORD
   resetPassword: async (req, res) => {
     try {
       console.log('Request body:', req.body);
@@ -510,6 +510,40 @@ const authController = {
 
     } catch (error) {
       console.error('Reset Password Error:', error);
+      return res.status(500).json({
+        status: false,
+        message: "Lỗi server",
+        statusCode: 500
+      });
+    }
+  },
+  // LOGOUT
+  logout: async(req,res)=>{
+    try {
+  
+      const { refreshToken } = req.body;
+      if (!refreshToken) {
+        return res.status(400).json({
+          status: false,
+          message: "Không tìm thấy refresh token",
+          statusCode: 400
+        });
+      }
+
+      // Xóa refresh token khỏi database
+      await RefreshToken.deleteOne({ token: refreshToken });
+
+      // Xóa refresh token cookie
+      res.clearCookie('refreshToken');
+
+      res.status(200).json({
+        status: true,
+        message: "Đăng xuất thành công",
+        statusCode: 200
+      });
+
+    } catch (error) {
+      console.error('Logout Error:', error);
       return res.status(500).json({
         status: false,
         message: "Lỗi server",
