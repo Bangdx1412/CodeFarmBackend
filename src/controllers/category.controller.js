@@ -1,9 +1,8 @@
 import Category from "../models/Category.model.js";
 import { sendSuccess } from "../middlewares/success.middleware.js";
-import asyncHandler from "../middlewares/asyncHandler.js";
 
 // Lấy danh sách danh mục
-export const getCategories = asyncHandler(async (req, res) => {
+export const getCategories = (async (req, res) => {
   const { search, page = 1, limit = 10 } = req.query;
 
   const query = search
@@ -30,7 +29,7 @@ export const getCategories = asyncHandler(async (req, res) => {
 });
 
 // Thêm danh mục mới
-export const createCategory = asyncHandler(async (req, res) => {
+export const createCategory = (async (req, res) => {
   const { title } = req.body;
   if (!title || title.trim() === "") {
     throw new Error("Tên danh mục không được để trống");
@@ -40,7 +39,7 @@ export const createCategory = asyncHandler(async (req, res) => {
 });
 
 // Cập nhật danh mục
-export const updateCategory = asyncHandler(async (req, res) => {
+export const updateCategory = (async (req, res) => {
   const id = req.params.id;
   const { title } = req.body;
   const updated = await Category.findByIdAndUpdate(id, { title }, { new: true });
@@ -49,7 +48,7 @@ export const updateCategory = asyncHandler(async (req, res) => {
 });
 
 // Xóa danh mục
-export const deleteCategory = asyncHandler(async (req, res) => {
+export const deleteCategory = (async (req, res) => {
   const id = req.params.id;
   const deleted = await Category.findByIdAndDelete(id);
   if (!deleted) throw new Error("Không tìm thấy danh mục để xóa");
