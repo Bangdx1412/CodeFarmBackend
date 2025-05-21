@@ -9,7 +9,10 @@ const accountSchema = new mongoose.Schema(
     token: String,
     role_id: String,
     status: String,
-    
+    admin:{
+      type: Boolean,
+      default: false,
+    },
     deleted: {
       type: Boolean,
       default: false,
