@@ -14,11 +14,6 @@ export const getCategories = async (req, res, next) => {
       error.statusCode = 400;
       throw error;
     }
-    if (search.length > 100) {
-      const error = new Error("Chuỗi tìm kiếm quá dài");
-      error.statusCode = 400;
-      throw error;
-    }
 
     //  lọc
     const filter = includeDeleted ? {} : { is_active: true };
