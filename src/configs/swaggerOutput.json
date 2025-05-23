@@ -11,31 +11,156 @@
 	"paths": {
 		"/categories/": {
 			"get": {
-				"description": "",
+				"tags": ["Categories"],
+				"summary": "Lấy danh sách danh mục",
+				"description": "Lấy danh sách danh mục theo cấu trúc cây",
 				"parameters": [
 					{
 						"name": "includeDeleted",
 						"in": "query",
-						"type": "string"
+						"type": "boolean",
+						"description": "Bao gồm danh mục đã xóa",
+						"default": false
 					}
 				],
 				"responses": {
 					"200": {
-						"description": "OK"
+						"description": "Lấy danh sách thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Lấy danh sách danh mục thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"categories": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"title": {
+														"type": "string",
+														"example": "Danh mục cha"
+													},
+													"parent_id": {
+														"type": "string",
+														"example": ""
+													},
+													"description": {
+														"type": "string",
+														"example": "Mô tả danh mục"
+													},
+													"thumbnails": {
+														"type": "string",
+														"example": "url_thumbnail"
+													},
+													"status": {
+														"type": "string",
+														"example": "active"
+													},
+													"position": {
+														"type": "number",
+														"example": 1
+													},
+													"slug": {
+														"type": "string",
+														"example": "danh-muc-cha"
+													},
+													"children": {
+														"type": "array",
+														"items": {
+															"$ref": "#/definitions/Category"
+														}
+													}
+												}
+											}
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Lỗi server",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Lỗi server"
+								},
+								"error": {
+									"type": "string",
+									"example": "Chi tiết lỗi"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 500
+								}
+							}
+						}
 					}
 				}
 			},
 			"post": {
-				"description": "",
+				"tags": ["Categories"],
+				"summary": "Thêm danh mục mới",
+				"description": "Thêm một danh mục mới vào hệ thống",
 				"parameters": [
 					{
 						"name": "body",
 						"in": "body",
+						"required": true,
 						"schema": {
 							"type": "object",
+							"required": ["title"],
 							"properties": {
 								"title": {
-									"example": "any"
+									"type": "string",
+									"description": "Tên danh mục",
+									"example": "Danh mục mới"
+								},
+								"parent_id": {
+									"type": "string",
+									"description": "ID danh mục cha (để trống nếu là danh mục gốc)",
+									"example": ""
+								},
+								"description": {
+									"type": "string",
+									"description": "Mô tả danh mục",
+									"example": "Mô tả chi tiết về danh mục"
+								},
+								"thumbnails": {
+									"type": "string",
+									"description": "URL ảnh thumbnail",
+									"example": "https://example.com/thumbnail.jpg"
+								},
+								"status": {
+									"type": "string",
+									"description": "Trạng thái danh mục",
+									"enum": ["active", "inactive"],
+									"default": "active",
+									"example": "active"
+								},
+								"position": {
+									"type": "number",
+									"description": "Vị trí hiển thị (tự động tăng nếu không chỉ định)",
+									"example": 1
 								}
 							}
 						}
@@ -43,7 +168,91 @@
 				],
 				"responses": {
 					"201": {
-						"description": "Created"
+						"description": "Thêm danh mục thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Thêm danh mục thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"title": {
+											"type": "string",
+											"example": "Danh mục mới"
+										},
+										"parent_id": {
+											"type": "string",
+											"example": ""
+										},
+										"description": {
+											"type": "string",
+											"example": "Mô tả chi tiết về danh mục"
+										},
+										"thumbnails": {
+											"type": "string",
+											"example": "https://example.com/thumbnail.jpg"
+										},
+										"status": {
+											"type": "string",
+											"example": "active"
+										},
+										"position": {
+											"type": "number",
+											"example": 1
+										},
+										"slug": {
+											"type": "string",
+											"example": "danh-muc-moi"
+										},
+										"createdAt": {
+											"type": "string",
+											"format": "date-time",
+											"example": "2024-03-14T10:00:00.000Z"
+										},
+										"updatedAt": {
+											"type": "string",
+											"format": "date-time",
+											"example": "2024-03-14T10:00:00.000Z"
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 201
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Lỗi server",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Lỗi server"
+								},
+								"error": {
+									"type": "string",
+									"example": "Chi tiết lỗi"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 500
+								}
+							}
+						}
 					}
 				}
 			}
