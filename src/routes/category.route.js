@@ -27,7 +27,7 @@ categoryRouter.patch("/:id", updateCategory);
 categoryRouter.delete("/:id", deleteCategory);
 
 // Xóa mềm danh mục
-categoryRouter.patch("/soft-delete/:id", softDeleteCategory);
+categoryRouter.delete("/soft-delete/:id", softDeleteCategory);
 
 // Khôi phục danh mục
 categoryRouter.patch("/restore/:id", restoreCategory);
