@@ -9,148 +9,6 @@
 	"basePath": "/",
 	"schemes": ["http"],
 	"paths": {
-		"/brands/": {
-			"get": {
-				"description": "",
-				"parameters": [
-					{
-						"name": "includeDeleted",
-						"in": "query",
-						"type": "string"
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				}
-			},
-			"post": {
-				"description": "",
-				"parameters": [
-					{
-						"name": "body",
-						"in": "body",
-						"schema": {
-							"type": "object",
-							"properties": {
-								"title": {
-									"example": "any"
-								}
-							}
-						}
-					}
-				],
-				"responses": {
-					"201": {
-						"description": "Created"
-					}
-				}
-			}
-		},
-		"/brands/{id}": {
-			"get": {
-				"description": "",
-				"parameters": [
-					{
-						"name": "id",
-						"in": "path",
-						"required": true,
-						"type": "string"
-					},
-					{
-						"name": "includeDeleted",
-						"in": "query",
-						"type": "string"
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				}
-			},
-			"patch": {
-				"description": "",
-				"parameters": [
-					{
-						"name": "id",
-						"in": "path",
-						"required": true,
-						"type": "string"
-					},
-					{
-						"name": "body",
-						"in": "body",
-						"schema": {
-							"type": "object",
-							"properties": {
-								"title": {
-									"example": "any"
-								}
-							}
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				}
-			},
-			"delete": {
-				"description": "",
-				"parameters": [
-					{
-						"name": "id",
-						"in": "path",
-						"required": true,
-						"type": "string"
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				}
-			}
-		},
-		"/brands/soft-delete/{id}": {
-			"delete": {
-				"description": "",
-				"parameters": [
-					{
-						"name": "id",
-						"in": "path",
-						"required": true,
-						"type": "string"
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				}
-			}
-		},
-		"/brands/restore/{id}": {
-			"patch": {
-				"description": "",
-				"parameters": [
-					{
-						"name": "id",
-						"in": "path",
-						"required": true,
-						"type": "string"
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				}
-			}
-		},
 		"/categories/": {
 			"get": {
 				"description": "",
@@ -878,19 +736,31 @@
 		},
 		"/auth/register": {
 			"post": {
-				"description": "",
+				"tags": ["Authentication"],
+				"summary": "Đăng ký tài khoản mới",
+				"description": "Tạo tài khoản mới và gửi email xác thực",
 				"parameters": [
 					{
 						"name": "body",
 						"in": "body",
+						"required": true,
 						"schema": {
 							"type": "object",
+							"required": ["email", "password", "fullName"],
 							"properties": {
 								"email": {
-									"example": "any"
+									"type": "string",
+									"format": "email",
+									"example": "user@example.com"
 								},
 								"password": {
-									"example": "any"
+									"type": "string",
+									"minLength": 6,
+									"example": "123456"
+								},
+								"fullName": {
+									"type": "string",
+									"example": "Nguyễn Văn A"
 								}
 							}
 						}
@@ -898,26 +768,87 @@
 				],
 				"responses": {
 					"201": {
-						"description": "Created"
+						"description": "Đăng ký thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Tài khoản được tạo thành công. Vui lòng kiểm tra email để xác thực tài khoản."
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"email": {
+											"type": "string",
+											"example": "user@example.com"
+										},
+										"fullName": {
+											"type": "string",
+											"example": "Nguyễn Văn A"
+										},
+										"status": {
+											"type": "string",
+											"example": "pending"
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 201
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Lỗi dữ liệu",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Email đã tồn tại trong hệ thống"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 400
+								}
+							}
+						}
 					}
 				}
 			}
 		},
 		"/auth/login": {
 			"post": {
-				"description": "",
+				"tags": ["Authentication"],
+				"summary": "Đăng nhập",
+				"description": "Đăng nhập vào hệ thống",
 				"parameters": [
 					{
 						"name": "body",
 						"in": "body",
+						"required": true,
 						"schema": {
 							"type": "object",
+							"required": ["email", "password"],
 							"properties": {
 								"email": {
-									"example": "any"
+									"type": "string",
+									"format": "email",
+									"example": "user@example.com"
 								},
 								"password": {
-									"example": "any"
+									"type": "string",
+									"example": "123456"
 								}
 							}
 						}
@@ -925,17 +856,125 @@
 				],
 				"responses": {
 					"200": {
-						"description": "OK"
+						"description": "Đăng nhập thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Đăng nhập thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"account": {
+											"type": "object",
+											"properties": {
+												"_id": {
+													"type": "string",
+													"example": "65f2e8b7c261e6001234abcd"
+												},
+												"email": {
+													"type": "string",
+													"example": "user@example.com"
+												},
+												"fullName": {
+													"type": "string",
+													"example": "Nguyễn Văn A"
+												},
+												"status": {
+													"type": "string",
+													"example": "active"
+												}
+											}
+										},
+										"accessToken": {
+											"type": "string",
+											"example": "eyJhbGciOiJIUzI1NiIs..."
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Lỗi đăng nhập",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Email hoặc mật khẩu không đúng"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 400
+								}
+							}
+						}
 					}
 				}
 			}
 		},
 		"/auth/logout": {
 			"post": {
-				"description": "",
+				"tags": ["Authentication"],
+				"summary": "Đăng xuất",
+				"description": "Đăng xuất khỏi hệ thống",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"type": "object",
+							"required": ["refreshToken"],
+							"properties": {
+								"refreshToken": {
+									"type": "string",
+									"example": "eyJhbGciOiJIUzI1NiIs..."
+								}
+							}
+						}
+					}
+				],
 				"responses": {
 					"200": {
-						"description": "OK"
+						"description": "Đăng xuất thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Đăng xuất thành công"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
 					}
 				}
 			}
@@ -992,15 +1031,237 @@
 				}
 			}
 		},
-		"/auth/profile": {
+		"/user/profile": {
 			"get": {
-				"description": "",
+				"tags": ["User"],
+				"summary": "Lấy thông tin profile",
+				"description": "Lấy thông tin profile của người dùng đang đăng nhập",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
 				"responses": {
 					"200": {
-						"description": "OK"
+						"description": "Lấy thông tin thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Lấy thông tin thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"email": {
+											"type": "string",
+											"example": "user@example.com"
+										},
+										"fullName": {
+											"type": "string",
+											"example": "Nguyễn Văn A"
+										},
+										"phone": {
+											"type": "string",
+											"example": "0123456789"
+										},
+										"avatar": {
+											"type": "string",
+											"example": "https://res.cloudinary.com/..."
+										},
+										"gender": {
+											"type": "string",
+											"enum": ["male", "female", "other"],
+											"example": "male"
+										},
+										"birthday": {
+											"type": "string",
+											"format": "date",
+											"example": "1990-01-01"
+										},
+										"address": {
+											"type": "string",
+											"example": "Hà Nội"
+										},
+										"status": {
+											"type": "string",
+											"example": "active"
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
 					}
 				}
 			}
+		},
+		"/user/update-info-user": {
+			"post": {
+				"tags": ["User"],
+				"summary": "Cập nhật thông tin profile",
+				"description": "Cập nhật thông tin profile của người dùng đang đăng nhập",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"consumes": [
+					"multipart/form-data"
+				],
+				"parameters": [
+					{
+						"name": "avatar",
+						"in": "formData",
+						"type": "file",
+						"description": "Ảnh đại diện (tối đa 5MB, định dạng: jpg, png, gif, webp)"
+					},
+					{
+						"name": "fullName",
+						"in": "formData",
+						"type": "string",
+						"description": "Họ và tên"
+					},
+					{
+						"name": "phone",
+						"in": "formData",
+						"type": "string",
+						"description": "Số điện thoại (bắt đầu bằng số 0, 10 chữ số)"
+					},
+					{
+						"name": "gender",
+						"in": "formData",
+						"type": "string",
+						"enum": ["male", "female", "other"],
+						"description": "Giới tính"
+					},
+					{
+						"name": "birthday",
+						"in": "formData",
+						"type": "string",
+						"format": "date",
+						"description": "Ngày sinh (không được lớn hơn ngày hiện tại)"
+					},
+					{
+						"name": "address",
+						"in": "formData",
+						"type": "string",
+						"description": "Địa chỉ"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Cập nhật thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Cập nhật thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"email": {
+											"type": "string",
+											"example": "user@example.com"
+										},
+										"fullName": {
+											"type": "string",
+											"example": "Nguyễn Văn A"
+										},
+										"phone": {
+											"type": "string",
+											"example": "0123456789"
+										},
+										"avatar": {
+											"type": "string",
+											"example": "https://res.cloudinary.com/..."
+										},
+										"gender": {
+											"type": "string",
+											"enum": ["male", "female", "other"],
+											"example": "male"
+										},
+										"birthday": {
+											"type": "string",
+											"format": "date",
+											"example": "1990-01-01"
+										},
+										"address": {
+											"type": "string",
+											"example": "Hà Nội"
+										},
+										"status": {
+											"type": "string",
+											"example": "active"
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Lỗi dữ liệu",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Dữ liệu không hợp lệ"
+								},
+								"errors": {
+									"type": "array",
+									"items": {
+										"type": "string"
+									},
+									"example": ["Số điện thoại phải bắt đầu bằng số 0 và có 10 chữ số"]
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 400
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"securityDefinitions": {
+		"BearerAuth": {
+			"type": "apiKey",
+			"name": "Authorization",
+			"in": "header",
+			"description": "JWT token. Example: 'Bearer {token}'"
 		}
 	}
 }
