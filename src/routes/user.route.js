@@ -7,6 +7,11 @@ import checkPermission from "../middlewares/checkPermission.js";
 const upload = multer();
 const routeUser = Router();
 
+routeUser.get("/profile", 
+    checkPermission.verifyToken,
+    userController.getProfile
+);
+
 routeUser.post("/update-info-user", 
     checkPermission.verifyToken,
     upload.single("avatar"),

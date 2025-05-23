@@ -20,6 +20,39 @@ const updateUserSchema = z.object({
 });
 
 const updateInfoUser = {
+  getProfile: async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await Account.findOne(
+        { _id: userId, deleted: false },
+        { password: 0, token: 0 }
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          status: false,
+          message: "Không tìm thấy thông tin người dùng",
+          statusCode: 404
+        });
+      }
+
+      return res.status(200).json({
+        status: true,
+        message: "Lấy thông tin thành công",
+        data: user,
+        statusCode: 200
+      });
+
+    } catch (error) {
+      console.error("Lỗi lấy thông tin:", error);
+      return res.status(500).json({
+        status: false,
+        message: "Lỗi server",
+        statusCode: 500
+      });
+    }
+  },
+
   updateUser: async (req, res) => {
     try {
       const userId = req.user.id;
