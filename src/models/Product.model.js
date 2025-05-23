@@ -3,11 +3,11 @@ import slug from "mongoose-slug-updater";
 mongoose.plugin(slug);
 const productSchema = new mongoose.Schema({
 	title: String,
-	product_category_id: 
-	{
-		type: String,
-		default:""
-	},
+  product_category_ids: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Category",
+   
+  }],
 	description: {
 		type: String,
 		default:""
@@ -30,10 +30,10 @@ const productSchema = new mongoose.Schema({
 		slug: "title",
 		unique: true,
 	},
-	deleted: {
-        type: Boolean,
-        default: false
-    },
+deleted: {
+  type: Boolean,
+  default: false
+},
 	deletedAt: Date,
   },{timestamps: true, versionKey: false});
 const Product = mongoose.model("Product", productSchema,"products");
