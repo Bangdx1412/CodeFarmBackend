@@ -9,6 +9,13 @@ const accountSchema = new mongoose.Schema(
     token: String,
     role_id: String,
     status: String,
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+      default: "other",
+    },
+    birthday: Date,
+    address: String,
     admin:{
       type: Boolean,
       default: false,
