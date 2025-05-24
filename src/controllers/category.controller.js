@@ -1,5 +1,6 @@
 import Category from "../models/Category.model.js";
 import { sendSuccess } from "../middlewares/success.middleware.js";
+import { CATEGORY_MESSAGES } from "../constants/message.js";
 
 // Lấy tất cả danh mục
 export const getCategories = async (req, res, next) => {
@@ -10,25 +11,20 @@ export const getCategories = async (req, res, next) => {
     const includeDeleted = req.query.includeDeleted === "true";
 
     if (page < 1 || limit < 1) {
-      const error = new Error("Page và limit phải là số dương");
+      const error = new Error(CATEGORY_MESSAGES.INVALID_PAGE_LIMIT);
       error.statusCode = 400;
       throw error;
     }
-
-    //  lọc
     const filter = includeDeleted ? {} : { is_active: true };
     if (search) {
       filter.$text = { $search: search };
     }
-
-    // Pagination
     const skip = (page - 1) * limit;
     const total = await Category.countDocuments(filter);
     const categories = await Category.find(filter)
       .skip(skip)
       .limit(limit);
 
-    // Trả về dữ liệu với metadata
     sendSuccess(
       res,
       {
@@ -40,7 +36,7 @@ export const getCategories = async (req, res, next) => {
           totalPages: Math.ceil(total / limit),
         },
       },
-      "Lấy danh sách danh mục thành công"
+      CATEGORY_MESSAGES.LIST_SUCCESS
     );
   } catch (error) {
     next(error);
@@ -52,11 +48,11 @@ export const getCategoryById = async (req, res, next) => {
   try {
     const category = await Category.findById(req.params.id);
     if (!category) {
-      const error = new Error("Danh mục không tồn tại");
+      const error = new Error(CATEGORY_MESSAGES.NOT_FOUND);
       error.statusCode = 404;
       throw error;
     }
-    sendSuccess(res, category, "Lấy danh mục thành công");
+    sendSuccess(res, category, CATEGORY_MESSAGES.GET_SUCCESS);
   } catch (error) {
     next(error);
   }
@@ -67,7 +63,7 @@ export const createCategory = async (req, res, next) => {
   try {
     const newCategory = new Category(req.body);
     const savedCategory = await newCategory.save();
-    sendSuccess(res, savedCategory, "Tạo danh mục thành công", 201);
+    sendSuccess(res, savedCategory, CATEGORY_MESSAGES.CREATE_SUCCESS, 201);
   } catch (error) {
     next(error);
   }
@@ -82,11 +78,11 @@ export const updateCategory = async (req, res, next) => {
       { new: true, runValidators: true }
     );
     if (!updatedCategory) {
-      const error = new Error("Danh mục không tồn tại");
+      const error = new Error(CATEGORY_MESSAGES.NOT_FOUND);
       error.statusCode = 404;
       throw error;
     }
-    sendSuccess(res, updatedCategory, "Cập nhật danh mục thành công");
+    sendSuccess(res, updatedCategory, CATEGORY_MESSAGES.UPDATE_SUCCESS);
   } catch (error) {
     next(error);
   }
@@ -97,11 +93,11 @@ export const deleteCategory = async (req, res, next) => {
   try {
     const deletedCategory = await Category.findByIdAndDelete(req.params.id);
     if (!deletedCategory) {
-      const error = new Error("Danh mục không tồn tại");
+      const error = new Error(CATEGORY_MESSAGES.NOT_FOUND);
       error.statusCode = 404;
       throw error;
     }
-    sendSuccess(res, null, "Xóa danh mục thành công");
+    sendSuccess(res, null, CATEGORY_MESSAGES.DELETE_SUCCESS);
   } catch (error) {
     next(error);
   }
@@ -116,11 +112,11 @@ export const softDeleteCategory = async (req, res, next) => {
       { new: true }
     );
     if (!updatedCategory) {
-      const error = new Error("Danh mục không tồn tại");
+      const error = new Error(CATEGORY_MESSAGES.NOT_FOUND);
       error.statusCode = 404;
       throw error;
     }
-    sendSuccess(res, updatedCategory, "Xóa mềm danh mục thành công");
+    sendSuccess(res, updatedCategory, CATEGORY_MESSAGES.SOFT_DELETE_SUCCESS);
   } catch (error) {
     next(error);
   }
@@ -135,11 +131,11 @@ export const restoreCategory = async (req, res, next) => {
       { new: true }
     );
     if (!updatedCategory) {
-      const error = new Error("Danh mục không tồn tại");
+      const error = new Error(CATEGORY_MESSAGES.NOT_FOUND);
       error.statusCode = 404;
       throw error;
     }
-    sendSuccess(res, updatedCategory, "Khôi phục danh mục thành công");
+    sendSuccess(res, updatedCategory, CATEGORY_MESSAGES.RESTORE_SUCCESS);
   } catch (error) {
     next(error);
   }
