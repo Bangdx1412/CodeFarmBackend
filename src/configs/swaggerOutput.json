@@ -1001,6 +1001,81 @@
 					}
 				}
 			}
-		}
+		},
+		
+"/wishlist": {
+  "post": {
+    "summary": "Thêm sản phẩm vào wishlist",
+    "parameters": [
+      {
+        "in": "body",
+        "name": "body",
+        "description": "user_id và product_id",
+        "required": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "user_id": { "type": "string" },
+            "product_id": { "type": "string" }
+          },
+          "required": ["user_id", "product_id"]
+        }
+      }
+    ],
+    "responses": {
+      "201": {
+        "description": "Thêm thành công"
+      },
+      "400": {
+        "description": "Đã có trong wishlist"
+      }
+    }
+  },
+  "delete": {
+    "summary": "Xóa sản phẩm khỏi wishlist",
+    "parameters": [
+      {
+        "in": "body",
+        "name": "body",
+        "description": "user_id và product_id",
+        "required": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "user_id": { "type": "string" },
+            "product_id": { "type": "string" }
+          },
+          "required": ["user_id", "product_id"]
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Đã xóa khỏi wishlist"
+      }
+    }
+  }
+},
+"/wishlist/{user_id}": {
+  "get": {
+    "summary": "Lấy danh sách wishlist của user",
+    "parameters": [
+      {
+        "name": "user_id",
+        "in": "path",
+        "required": true,
+        "type": "string"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Danh sách wishlist"
+      }
+    }
+  }
+}
+
+
 	}
 }
+
