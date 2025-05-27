@@ -1,5 +1,6 @@
 import Product from "../models/Product.model.js";
 import { sendSuccess } from "../middlewares/success.middleware.js";
+import { PRODUCT_MESSAGES } from "../constants/message.js";
 
 // Lấy danh sách sản phẩm (có tìm kiếm, phân trang, sort)
 export const getProducts = async (req, res, next) => {
@@ -42,7 +43,7 @@ export const getProducts = async (req, res, next) => {
           totalPages: Math.ceil(total / limitNumber),
         },
       },
-      "Lấy danh sách sản phẩm thành công"
+      PRODUCT_MESSAGES.GET_LIST_SUCCESS
     );
   } catch (error) {
     next(error);
@@ -61,11 +62,11 @@ export const getProductById = async (req, res, next) => {
     });
 
     if (!product) {
-      const error = new Error("Sản phẩm không tồn tại hoặc đã bị xóa");
+      const error = new Error(PRODUCT_MESSAGES.NOT_FOUND);
       error.statusCode = 404;
       throw error;
     }
-    sendSuccess(res, product, "Lấy sản phẩm thành công");
+    sendSuccess(res, product, PRODUCT_MESSAGES.GET_BY_ID_SUCCESS);
   } catch (error) {
     next(error);
   }
@@ -77,14 +78,14 @@ export const createProduct = async (req, res, next) => {
     const { title } = req.body;
 
     if (!title || title.trim() === "") {
-      const error = new Error("Tên sản phẩm không được để trống");
+      const error = new Error(PRODUCT_MESSAGES.TITLE_REQUIRED);
       error.statusCode = 400;
       throw error;
     }
 
     const existed = await Product.findOne({ title });
     if (existed) {
-      const error = new Error("Sản phẩm đã tồn tại");
+      const error = new Error(PRODUCT_MESSAGES.ALREADY_EXISTS);
       error.statusCode = 400;
       throw error;
     }
@@ -98,7 +99,7 @@ export const createProduct = async (req, res, next) => {
       select: "title _id",
     });
 
-    sendSuccess(res, populatedProduct, "Thêm sản phẩm thành công", 201);
+    sendSuccess(res, populatedProduct, PRODUCT_MESSAGES.CREATE_SUCCESS, 201);
   } catch (error) {
     next(error);
   }
@@ -116,11 +117,11 @@ export const updateProduct = async (req, res, next) => {
       select: "title _id",
     });
     if (!updated) {
-      const error = new Error("Không tìm thấy sản phẩm hoặc sản phẩm đã bị xóa");
+      const error = new Error(PRODUCT_MESSAGES.NOT_FOUND);
       error.statusCode = 404;
       throw error;
     }
-    sendSuccess(res, updated, "Cập nhật sản phẩm thành công");
+    sendSuccess(res, updated, PRODUCT_MESSAGES.UPDATE_SUCCESS);
   } catch (error) {
     next(error);
   }
@@ -131,12 +132,12 @@ export const softDeleteProduct = async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      const error = new Error("Không tìm thấy sản phẩm để xóa");
+      const error = new Error(PRODUCT_MESSAGES.NOT_FOUND);
       error.statusCode = 404;
       throw error;
     }
     if (product.deleted) {
-      const error = new Error("Sản phẩm đã bị xóa mềm trước đó");
+      const error = new Error(PRODUCT_MESSAGES.ALREADY_DELETED);
       error.statusCode = 400;
       throw error;
     }
@@ -150,7 +151,7 @@ export const softDeleteProduct = async (req, res, next) => {
       select: "title _id",
     });
 
-    sendSuccess(res, populatedProduct, "Xóa mềm sản phẩm thành công");
+    sendSuccess(res, populatedProduct, PRODUCT_MESSAGES.SOFT_DELETE_SUCCESS);
   } catch (error) {
     next(error);
   }
@@ -161,11 +162,11 @@ export const deleteProduct = async (req, res, next) => {
   try {
     const deleted = await Product.findByIdAndDelete(req.params.id);
     if (!deleted) {
-      const error = new Error("Không tìm thấy sản phẩm để xoá vĩnh viễn");
+      const error = new Error(PRODUCT_MESSAGES.NOT_FOUND);
       error.statusCode = 404;
       throw error;
     }
-    sendSuccess(res, null, "Đã xoá vĩnh viễn sản phẩm");
+    sendSuccess(res, null, PRODUCT_MESSAGES.DELETE_SUCCESS);
   } catch (error) {
     next(error);
   }
@@ -176,12 +177,12 @@ export const restoreProduct = async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      const error = new Error("Không tìm thấy sản phẩm để khôi phục");
+      const error = new Error(PRODUCT_MESSAGES.NOT_FOUND);
       error.statusCode = 404;
       throw error;
     }
     if (!product.deleted) {
-      const error = new Error("Sản phẩm chưa bị xóa mềm");
+      const error = new Error(PRODUCT_MESSAGES.NOT_SOFT_DELETED);
       error.statusCode = 400;
       throw error;
     }
@@ -195,7 +196,7 @@ export const restoreProduct = async (req, res, next) => {
       select: "title _id",
     });
 
-    sendSuccess(res, populatedProduct, "Khôi phục sản phẩm thành công");
+    sendSuccess(res, populatedProduct, PRODUCT_MESSAGES.RESTORE_SUCCESS);
   } catch (error) {
     next(error);
   }
