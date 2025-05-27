@@ -1,49 +1,89 @@
 import Product from "../models/Product.model.js";
+import Category from "../models/Category.model.js";
 import { sendSuccess } from "../middlewares/success.middleware.js";
 import { PRODUCT_MESSAGES } from "../constants/message.js";
+import tree from "../helpers/createTree.js";
+import cloudinary from "../configs/cloudinary.js";
+
 
 // Lấy danh sách sản phẩm (có tìm kiếm, phân trang, sort)
 export const getProducts = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page);
-    const limit = parseInt(req.query.limit);
-    const search = req.query.search || "";
-    const includeDeleted = req.query.includeDeleted === "true";
-    const sortBy = req.query.sortBy || "createdAt";
-    const order = req.query.order === "asc" ? 1 : -1;
+    const { page = 1, limit = 10, search = "", includeDeleted = false, sortBy = "createdAt", order = "desc" } = req.query;
 
-    const pageNumber = Number.isNaN(page) || page < 1 ? 1 : page;
-    const limitNumber = Number.isNaN(limit) || limit < 1 ? 10 : limit;
-
-    // Lọc
     const filter = includeDeleted ? {} : { deleted: false };
     if (search) {
       filter.title = { $regex: search, $options: "i" };
     }
 
-    const skip = (pageNumber - 1) * limitNumber;
+    const skip = (page - 1) * limit;
     const total = await Product.countDocuments(filter);
     const products = await Product.find(filter)
-      .sort({ [sortBy]: order })
+      .sort({ [sortBy]: order === "asc" ? 1 : -1 })
       .skip(skip)
-      .limit(limitNumber)
+      .limit(limit)
       .populate({
-        path: "product_category_ids",
-        select: "title",
+        path: "product_category_id",
+        select: "title parent_id description thumbnails status position slug",
+        populate: {
+          path: "parent_id",
+          select: "title description thumbnails status position slug"
+        }
       });
+
+    // Format products with category information
+    const formattedProducts = products.map(product => {
+      const category = product.product_category_id;
+      return {
+        ...product.toObject(),
+        category: {
+          id: category?._id,
+          name: category?.title,
+          parent: category?.parent_id ? {
+            id: category.parent_id._id,
+            name: category.parent_id.title
+          } : null
+        }
+      };
+    });
 
     sendSuccess(
       res,
       {
-        products,
+        products: formattedProducts,
         pagination: {
-          page: pageNumber,
-          limit: limitNumber,
+          page,
+          limit,
           total,
-          totalPages: Math.ceil(total / limitNumber),
+          totalPages: Math.ceil(total / limit),
         },
       },
       PRODUCT_MESSAGES.GET_LIST_SUCCESS
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Lấy danh sách danh mục cho sản phẩm
+export const getProductCategories = async (req, res, next) => {
+  try {
+    const categories = await Category.find({ deleted: false })
+      .select('title parent_id description thumbnails status position slug');
+
+      if (!categories?.length) {
+      return sendSuccess(
+        res,
+        { categories: [] },
+        "Không có danh mục nào"
+      );
+    }
+
+    const categoryTree = tree(categories);
+    return sendSuccess(
+      res,
+      { categories: categoryTree },
+      "Lấy danh sách danh mục thành công"
     );
   } catch (error) {
     next(error);
@@ -57,8 +97,12 @@ export const getProductById = async (req, res, next) => {
       _id: req.params.id,
       deleted: false,
     }).populate({
-      path: "product_category_ids",
-      select: "title",
+      path: "product_category_id",
+      select: "title parent_id",
+      populate: {
+        path: "parent_id",
+        select: "title"
+      }
     });
 
     if (!product) {
@@ -75,54 +119,124 @@ export const getProductById = async (req, res, next) => {
 // Thêm sản phẩm mới
 export const createProduct = async (req, res, next) => {
   try {
-    const { title } = req.body;
+    const { title, product_category_id, variants, position } = req.body;
 
-    if (!title || title.trim() === "") {
-      const error = new Error(PRODUCT_MESSAGES.TITLE_REQUIRED);
-      error.statusCode = 400;
-      throw error;
-    }
-
-    const existed = await Product.findOne({ title });
-    if (existed) {
-      const error = new Error(PRODUCT_MESSAGES.ALREADY_EXISTS);
-      error.statusCode = 400;
-      throw error;
-    }
-
-    // Tạo sản phẩm
-    const product = await Product.create(req.body);
-
-    // Populate tên danh mục 
-    const populatedProduct = await Product.findById(product._id).populate({
-      path: "product_category_ids",
-      select: "title _id",
+    // Check if category exists
+    const category = await Category.findOne({
+      _id: product_category_id,
+      deleted: false
     });
+
+    if (!category) {
+      const error = new Error(PRODUCT_MESSAGES.CATEGORY_NOT_FOUND);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    
+
+    // Calculate total stock from variants
+    const totalStock = variants.reduce((sum, variant) => sum + variant.stock, 0);
+
+    // Handle position
+    let finalPosition = position;
+    if (!finalPosition) {
+      const count = await Product.countDocuments();
+      finalPosition = count + 1;
+    }
+
+    // Create product with variants
+    const product = await Product.create({
+      ...req.body,
+      stock: totalStock,
+      variants: variants,
+      position: finalPosition
+    });
+    
+    // Populate category information
+    const populatedProduct = await Product.findById(product._id)
+      .populate({
+        path: "product_category_id",
+        select: "title parent_id",
+        populate: {
+          path: "parent_id",
+          select: "title"
+        }
+      });
 
     sendSuccess(res, populatedProduct, PRODUCT_MESSAGES.CREATE_SUCCESS, 201);
   } catch (error) {
+    if (error.code === 11000) {
+      error.message = PRODUCT_MESSAGES.DUPLICATE_KEY;
+      error.statusCode = 400;
+    }
     next(error);
   }
 };
 
-// Cập nhật sản phẩm 
+// Cập nhật sản phẩm
 export const updateProduct = async (req, res, next) => {
   try {
-    const updated = await Product.findOneAndUpdate(
-      { _id: req.params.id, deleted: false },
-      req.body,
-      { new: true, runValidators: true }
-    ).populate({
-      path: "product_category_ids",
-      select: "title _id",
-    });
-    if (!updated) {
+    const { variants, product_category_id } = req.body;
+    const { id: productId } = req.params;
+
+    const product = await Product.findOne({ _id: productId, deleted: false });
+    if (!product) {
       const error = new Error(PRODUCT_MESSAGES.NOT_FOUND);
       error.statusCode = 404;
       throw error;
     }
+
+    // If variants are being updated
+    if (variants && Array.isArray(variants)) {
+      req.body.stock = variants.reduce((sum, variant) => sum + variant.stock, 0);
+    }
+
+    // If category is being updated
+    if (product_category_id) {
+      const category = await Category.findOne({
+        _id: product_category_id,
+        deleted: false
+      });
+
+      if (!category) {
+        const error = new Error(PRODUCT_MESSAGES.CATEGORY_NOT_FOUND);
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
+    // Handle thumbnails update
+    if (req.body.thumbnails && Array.isArray(req.body.thumbnails)) {
+      // Delete old thumbnails from Cloudinary if they exist
+      if (product.thumbnails && product.thumbnails.length > 0) {
+        const deletePromises = product.thumbnails.map(thumbnail => {
+          const publicId = thumbnail.url.split('/').pop().split('.')[0];
+          return cloudinary.uploader.destroy(publicId);
+        });
+        await Promise.all(deletePromises);
+      }
+    }
+
+    const updated = await Product.findOneAndUpdate(
+      { _id: productId, deleted: false },
+      req.body,
+      { new: true, runValidators: true }
+    ).populate({
+      path: "product_category_id",
+      select: "title parent_id",
+      populate: {
+        path: "parent_id",
+        select: "title"
+      }
+    });
+
     sendSuccess(res, updated, PRODUCT_MESSAGES.UPDATE_SUCCESS);
   } catch (error) {
+    if (error.code === 11000) {
+      error.message = PRODUCT_MESSAGES.DUPLICATE_KEY;
+      error.statusCode = 400;
+    }
     next(error);
   }
 };
@@ -147,8 +261,12 @@ export const softDeleteProduct = async (req, res, next) => {
 
     // Populate tên danh mục khi trả về
     const populatedProduct = await Product.findById(product._id).populate({
-      path: "product_category_ids",
-      select: "title _id",
+      path: "product_category_id",
+      select: "title parent_id",
+      populate: {
+        path: "parent_id",
+        select: "title"
+      }
     });
 
     sendSuccess(res, populatedProduct, PRODUCT_MESSAGES.SOFT_DELETE_SUCCESS);
@@ -192,11 +310,63 @@ export const restoreProduct = async (req, res, next) => {
 
     // Populate tên danh mục khi trả về
     const populatedProduct = await Product.findById(product._id).populate({
-      path: "product_category_ids",
-      select: "title _id",
+      path: "product_category_id",
+      select: "title parent_id",
+      populate: {
+        path: "parent_id",
+        select: "title"
+      }
     });
 
     sendSuccess(res, populatedProduct, PRODUCT_MESSAGES.RESTORE_SUCCESS);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Thêm biến thể cho sản phẩm
+export const addProductVariant = async (req, res, next) => {
+  try {
+    const { variants } = req.body;
+    const { id: productId } = req.params;
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      const error = new Error(PRODUCT_MESSAGES.NOT_FOUND);
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Check for duplicate sizes
+    const existingSizes = new Set(product.variants.map(v => v.size));
+    for (const variant of variants) {
+      if (existingSizes.has(variant.size)) {
+        const error = new Error(PRODUCT_MESSAGES.VARIANT_SIZE_DUPLICATE);
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
+    // Add new variants
+    product.variants.push(...variants);
+    
+    // Update total stock
+    product.stock = product.variants.reduce((total, variant) => total + variant.stock, 0);
+    
+    await product.save();
+
+    // Populate category information
+    const populatedProduct = await Product.findById(product._id)
+      .populate({
+        path: "product_category_id",
+        select: "title parent_id",
+        populate: {
+          path: "parent_id",
+          select: "title"
+        }
+      });
+
+    sendSuccess(res, populatedProduct, "Thêm biến thể thành công");
   } catch (error) {
     next(error);
   }
