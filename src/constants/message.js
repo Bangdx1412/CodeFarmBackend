@@ -10,5 +10,17 @@ export const PRODUCT_MESSAGES = {
   ALREADY_DELETED: "Sản phẩm đã bị xóa mềm trước đó",
   NOT_SOFT_DELETED: "Sản phẩm chưa bị xóa mềm",
   TITLE_REQUIRED: "Tên sản phẩm không được để trống",
-  ALREADY_EXISTS: "Sản phẩm đã tồn tại"
+  ALREADY_EXISTS: "Sản phẩm đã tồn tại",
+  CATEGORY_REQUIRED: "Danh mục sản phẩm không được để trống",
+  CATEGORY_NOT_FOUND: "Danh mục sản phẩm không tồn tại",
+  VARIANTS_REQUIRED: "Vui lòng thêm ít nhất một biến thể cho sản phẩm",
+  VARIANT_INVALID: "Biến thể không hợp lệ, vui lòng kiểm tra lại size và số lượng",
+  VARIANT_SIZE_REQUIRED: "Size của biến thể không được để trống",
+  VARIANT_STOCK_REQUIRED: "Số lượng của biến thể không được để trống",
+  VARIANT_STOCK_INVALID: "Số lượng của biến thể phải lớn hơn 0",
+  VARIANT_SIZE_DUPLICATE: "Size này đã tồn tại trong sản phẩm",
+  INVALID_ID: "ID không hợp lệ",
+  DUPLICATE_KEY: "Dữ liệu bị trùng lặp (ví dụ: title hoặc slug đã tồn tại)",
+  UPLOAD_SUCCESS: "Tải ảnh lên thành công",
+  UPLOAD_FAILED: "Tải ảnh lên thất bại"
 };

@@ -37,3 +37,36 @@ export const uploadCloud = async (req, res, next) => {
     next();
   }
 };
+
+export const uploadMultipleCloud = async (req, res, next) => {
+  if (!req.files || req.files.length === 0) return next();
+
+  const uploadPromises = req.files.map(file => {
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream((error, result) => {
+        if (result) {
+          resolve({
+            url: result.url,
+            position: 0, // Default position
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+        } else {
+          reject(error);
+        }
+      });
+
+      streamifier.createReadStream(file.buffer).pipe(stream);
+    });
+  });
+
+  try {
+    const results = await Promise.all(uploadPromises);
+    req.body.thumbnails = results;
+    
+    next();
+  } catch (error) {
+    console.error('Multiple upload error:', error);
+    res.status(500).json({ message: 'Multiple upload failed', error });
+  }
+};

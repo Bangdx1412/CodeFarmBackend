@@ -1388,8 +1388,7 @@
       }
     }
   }
-}
-
+},
 		"/user/update-info-user": {
 			"post": {
 				"tags": ["User"],
