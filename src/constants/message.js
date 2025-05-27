@@ -24,3 +24,10 @@ export const PRODUCT_MESSAGES = {
   UPLOAD_SUCCESS: "Tải ảnh lên thành công",
   UPLOAD_FAILED: "Tải ảnh lên thất bại"
 };
+export const COUPON_MESSAGES = {
+  CREATE_SUCCESS: "Tạo mã giảm giá thành công",
+  UPDATE_SUCCESS: "Cập nhật mã giảm giá thành công",
+  CODE_EXISTS: "Mã coupon đã tồn tại",
+  NOT_FOUND: "Không tìm thấy coupon",
+  SERVER_ERROR: "Lỗi server"
+};

@@ -1535,7 +1535,122 @@
 					}
 				}
 			}
-		}
+		},
+		"/coupon": {
+  "post": {
+    "tags": ["Coupon"],
+    "summary": "Tạo mã giảm giá",
+    "description": "Tạo mới một mã giảm giá (coupon/voucher)",
+    "parameters": [
+      {
+        "name": "body",
+        "in": "body",
+        "required": true,
+        "schema": {
+          "type": "object",
+          "required": [
+            "code",
+            "discount_type",
+            "discount_value",
+            "min_purchase",
+            "quantity",
+            "start_date",
+            "end_date"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "example": "SALE2025"
+            },
+            "discount_type": {
+              "type": "string",
+              "enum": ["percent", "amount"],
+              "example": "percent"
+            },
+            "discount_value": {
+              "type": "number",
+              "example": 10
+            },
+            "min_purchase": {
+              "type": "number",
+              "example": 200000
+            },
+            "quantity": {
+              "type": "number",
+              "example": 100
+            },
+            "start_date": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2025-06-01T00:00:00.000Z"
+            },
+            "end_date": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2025-06-30T23:59:59.000Z"
+            },
+            "conditions": {
+              "type": "object",
+              "example": { "userType": "new", "productIds": ["123", "456"] }
+            }
+          }
+        }
+      }
+    ],
+    "responses": {
+      "201": {
+        "description": "Tạo mã giảm giá thành công"
+      },
+      "400": {
+        "description": "Mã coupon đã tồn tại"
+      },
+      "500": {
+        "description": "Lỗi server"
+      }
+    }
+  }
+},
+"/coupon/{id}": {
+  "put": {
+    "tags": ["Coupon"],
+    "summary": "Cập nhật mã giảm giá",
+    "description": "Cập nhật thông tin mã giảm giá theo ID",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "type": "string",
+        "description": "ID của mã giảm giá"
+      },
+      {
+        "name": "body",
+        "in": "body",
+        "required": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "code": { "type": "string", "example": "SALE2025" },
+            "discount_type": { "type": "string", "enum": ["percent", "amount"], "example": "percent" },
+            "discount_value": { "type": "number", "example": 10 },
+            "min_purchase": { "type": "number", "example": 200000 },
+            "quantity": { "type": "number", "example": 100 },
+            "start_date": { "type": "string", "format": "date-time", "example": "2025-06-01T00:00:00.000Z" },
+            "end_date": { "type": "string", "format": "date-time", "example": "2025-06-30T23:59:59.000Z" },
+            "conditions": { "type": "object", "example": { "userType": "new" } }
+          }
+        }
+      }
+    ],
+    "responses": {
+      "200": { "description": "Cập nhật mã giảm giá thành công" },
+      "400": { "description": "Mã coupon đã tồn tại" },
+      "404": { "description": "Không tìm thấy coupon" },
+      "500": { "description": "Lỗi server" }
+    }
+  }
+}
+
 	},
 	"securityDefinitions": {
 		"BearerAuth": {
@@ -1545,5 +1660,8 @@
 			"description": "JWT token. Example: 'Bearer {token}'"
 		}
 	}
+	
+
+	
 }
 
