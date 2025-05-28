@@ -9,18 +9,53 @@
 	"basePath": "/",
 	"schemes": ["http"],
 	"paths": {
-		"/categories/": {
+		"/categories": {
 			"get": {
 				"tags": ["Categories"],
 				"summary": "Lấy danh sách danh mục",
-				"description": "Lấy danh sách danh mục theo cấu trúc cây",
+				"description": "Lấy danh sách danh mục sản phẩm với tìm kiếm, phân trang và sắp xếp",
 				"parameters": [
+					{
+						"name": "page",
+						"in": "query",
+						"type": "integer",
+						"description": "Số trang",
+						"default": 1
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"type": "integer",
+						"description": "Số danh mục mỗi trang",
+						"default": 10
+					},
+					{
+						"name": "search",
+						"in": "query",
+						"type": "string",
+						"description": "Từ khóa tìm kiếm"
+					},
 					{
 						"name": "includeDeleted",
 						"in": "query",
 						"type": "boolean",
 						"description": "Bao gồm danh mục đã xóa",
 						"default": false
+					},
+					{
+						"name": "sortBy",
+						"in": "query",
+						"type": "string",
+						"description": "Sắp xếp theo trường",
+						"default": "createdAt"
+					},
+					{
+						"name": "order",
+						"in": "query",
+						"type": "string",
+						"enum": ["asc", "desc"],
+						"description": "Thứ tự sắp xếp",
+						"default": "desc"
 					}
 				],
 				"responses": {
@@ -45,40 +80,56 @@
 											"items": {
 												"type": "object",
 												"properties": {
+													"_id": {
+														"type": "string",
+														"example": "65f2e8b7c261e6001234abcd"
+													},
 													"title": {
 														"type": "string",
-														"example": "Danh mục cha"
-													},
-													"parent_id": {
-														"type": "string",
-														"example": ""
+														"example": "Áo thun"
 													},
 													"description": {
 														"type": "string",
-														"example": "Mô tả danh mục"
+														"example": "Danh mục áo thun"
 													},
-													"thumbnails": {
-														"type": "string",
-														"example": "url_thumbnail"
-													},
-													"status": {
-														"type": "string",
-														"example": "active"
+													"parent": {
+														"type": "object",
+														"properties": {
+															"_id": {
+																"type": "string",
+																"example": "65f2e8b7c261e6001234abce"
+															},
+															"title": {
+																"type": "string",
+																"example": "Thời trang nam"
+															}
+														}
 													},
 													"position": {
-														"type": "number",
+														"type": "integer",
 														"example": 1
-													},
-													"slug": {
-														"type": "string",
-														"example": "danh-muc-cha"
-													},
-													"children": {
-														"type": "array",
-														"items": {
-															"$ref": "#/definitions/Category"
-														}
 													}
+												}
+											}
+										},
+										"pagination": {
+											"type": "object",
+											"properties": {
+												"page": {
+													"type": "integer",
+													"example": 1
+												},
+												"limit": {
+													"type": "integer",
+													"example": 10
+												},
+												"total": {
+													"type": "integer",
+													"example": 50
+												},
+												"totalPages": {
+													"type": "integer",
+													"example": 5
 												}
 											}
 										}
@@ -90,79 +141,39 @@
 								}
 							}
 						}
-					},
-					"500": {
-						"description": "Lỗi server",
-						"schema": {
-							"type": "object",
-							"properties": {
-								"status": {
-									"type": "boolean",
-									"example": false
-								},
-								"message": {
-									"type": "string",
-									"example": "Lỗi server"
-								},
-								"error": {
-									"type": "string",
-									"example": "Chi tiết lỗi"
-								},
-								"statusCode": {
-									"type": "number",
-									"example": 500
-								}
-							}
-						}
 					}
 				}
 			},
 			"post": {
 				"tags": ["Categories"],
 				"summary": "Thêm danh mục mới",
-				"description": "Thêm một danh mục mới vào hệ thống",
+				"description": "Thêm một danh mục sản phẩm mới vào hệ thống",
 				"parameters": [
 					{
-						"name": "body",
+						"name": "title",
 						"in": "body",
 						"required": true,
 						"schema": {
 							"type": "object",
-							"required": ["title"],
 							"properties": {
 								"title": {
 									"type": "string",
-									"description": "Tên danh mục",
-									"example": "Danh mục mới"
-								},
-								"parent_id": {
-									"type": "string",
-									"description": "ID danh mục cha (để trống nếu là danh mục gốc)",
-									"example": ""
+									"example": "Áo thun"
 								},
 								"description": {
 									"type": "string",
-									"description": "Mô tả danh mục",
-									"example": "Mô tả chi tiết về danh mục"
+									"example": "Danh mục áo thun"
 								},
-								"thumbnails": {
+								"parent_id": {
 									"type": "string",
-									"description": "URL ảnh thumbnail",
-									"example": "https://example.com/thumbnail.jpg"
-								},
-								"status": {
-									"type": "string",
-									"description": "Trạng thái danh mục",
-									"enum": ["active", "inactive"],
-									"default": "active",
-									"example": "active"
+									"example": "65f2e8b7c261e6001234abce"
 								},
 								"position": {
-									"type": "number",
-									"description": "Vị trí hiển thị (tự động tăng nếu không chỉ định)",
+									"type": "integer",
 									"example": 1
 								}
-							}
+							},
+							"required": ["title"]
 						}
 					}
 				],
@@ -183,43 +194,34 @@
 								"data": {
 									"type": "object",
 									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
 										"title": {
 											"type": "string",
-											"example": "Danh mục mới"
-										},
-										"parent_id": {
-											"type": "string",
-											"example": ""
+											"example": "Áo thun"
 										},
 										"description": {
 											"type": "string",
-											"example": "Mô tả chi tiết về danh mục"
+											"example": "Danh mục áo thun"
 										},
-										"thumbnails": {
-											"type": "string",
-											"example": "https://example.com/thumbnail.jpg"
-										},
-										"status": {
-											"type": "string",
-											"example": "active"
+										"parent": {
+											"type": "object",
+											"properties": {
+												"_id": {
+													"type": "string",
+													"example": "65f2e8b7c261e6001234abce"
+												},
+												"title": {
+													"type": "string",
+													"example": "Thời trang nam"
+												}
+											}
 										},
 										"position": {
-											"type": "number",
+											"type": "integer",
 											"example": 1
-										},
-										"slug": {
-											"type": "string",
-											"example": "danh-muc-moi"
-										},
-										"createdAt": {
-											"type": "string",
-											"format": "date-time",
-											"example": "2024-03-14T10:00:00.000Z"
-										},
-										"updatedAt": {
-											"type": "string",
-											"format": "date-time",
-											"example": "2024-03-14T10:00:00.000Z"
 										}
 									}
 								},
@@ -230,8 +232,8 @@
 							}
 						}
 					},
-					"500": {
-						"description": "Lỗi server",
+					"400": {
+						"description": "Lỗi dữ liệu",
 						"schema": {
 							"type": "object",
 							"properties": {
@@ -241,15 +243,11 @@
 								},
 								"message": {
 									"type": "string",
-									"example": "Lỗi server"
-								},
-								"error": {
-									"type": "string",
-									"example": "Chi tiết lỗi"
+									"example": "Tên danh mục không được để trống"
 								},
 								"statusCode": {
 									"type": "number",
-									"example": 500
+									"example": 400
 								}
 							}
 						}
@@ -259,91 +257,318 @@
 		},
 		"/categories/{id}": {
 			"get": {
-				"description": "",
+				"tags": ["Categories"],
+				"summary": "Lấy thông tin danh mục theo ID",
+				"description": "Lấy thông tin chi tiết của một danh mục",
 				"parameters": [
 					{
 						"name": "id",
 						"in": "path",
 						"required": true,
-						"type": "string"
-					},
-					{
-						"name": "includeDeleted",
-						"in": "query",
-						"type": "string"
+						"type": "string",
+						"description": "ID của danh mục"
 					}
 				],
 				"responses": {
 					"200": {
-						"description": "OK"
+						"description": "Lấy thông tin thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Lấy danh mục thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"title": {
+											"type": "string",
+											"example": "Áo thun"
+										},
+										"description": {
+											"type": "string",
+											"example": "Danh mục áo thun"
+										},
+										"parent": {
+											"type": "object",
+											"properties": {
+												"_id": {
+													"type": "string",
+													"example": "65f2e8b7c261e6001234abce"
+												},
+												"title": {
+													"type": "string",
+													"example": "Thời trang nam"
+												}
+											}
+										},
+										"position": {
+											"type": "integer",
+											"example": 1
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Không tìm thấy danh mục",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Danh mục không tồn tại hoặc đã bị xóa"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 404
+								}
+							}
+						}
 					}
 				}
 			},
 			"patch": {
-				"description": "",
+				"tags": ["Categories"],
+				"summary": "Cập nhật danh mục",
+				"description": "Cập nhật thông tin của một danh mục",
 				"parameters": [
 					{
 						"name": "id",
 						"in": "path",
 						"required": true,
-						"type": "string"
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				}
-			},
-			"delete": {
-				"description": "",
-				"parameters": [
+						"type": "string",
+						"description": "ID của danh mục"
+					},
 					{
-						"name": "id",
-						"in": "path",
-						"required": true,
-						"type": "string"
+						"name": "body",
+						"in": "body",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"title": {
+									"type": "string",
+									"example": "Áo thun nam"
+								},
+								"description": {
+									"type": "string",
+									"example": "Danh mục áo thun nam"
+								},
+								"parent_id": {
+									"type": "string",
+									"example": "65f2e8b7c261e6001234abce"
+								},
+								"position": {
+									"type": "integer",
+									"example": 1
+								}
+							}
+						}
 					}
 				],
 				"responses": {
 					"200": {
-						"description": "OK"
+						"description": "Cập nhật thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Cập nhật danh mục thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"title": {
+											"type": "string",
+											"example": "Áo thun nam"
+										},
+										"description": {
+											"type": "string",
+											"example": "Danh mục áo thun nam"
+										},
+										"parent": {
+											"type": "object",
+											"properties": {
+												"_id": {
+													"type": "string",
+													"example": "65f2e8b7c261e6001234abce"
+												},
+												"title": {
+													"type": "string",
+													"example": "Thời trang nam"
+												}
+											}
+										},
+										"position": {
+											"type": "integer",
+											"example": 1
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Không tìm thấy danh mục",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Danh mục không tồn tại hoặc đã bị xóa"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 404
+								}
+							}
+						}
 					}
 				}
 			}
 		},
 		"/categories/soft-delete/{id}": {
 			"delete": {
-				"description": "",
+				"tags": ["Categories"],
+				"summary": "Xóa mềm danh mục",
+				"description": "Đánh dấu danh mục là đã xóa (soft delete)",
 				"parameters": [
 					{
 						"name": "id",
 						"in": "path",
 						"required": true,
-						"type": "string"
+						"type": "string",
+						"description": "ID của danh mục"
 					}
 				],
 				"responses": {
 					"200": {
-						"description": "OK"
+						"description": "Xóa mềm thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Xóa mềm danh mục thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"deleted": {
+											"type": "boolean",
+											"example": true
+										},
+										"deletedAt": {
+											"type": "string",
+											"format": "date-time",
+											"example": "2024-03-14T10:00:00.000Z"
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
 					}
 				}
 			}
 		},
 		"/categories/restore/{id}": {
 			"patch": {
-				"description": "",
+				"tags": ["Categories"],
+				"summary": "Khôi phục danh mục",
+				"description": "Khôi phục danh mục đã bị xóa mềm",
 				"parameters": [
 					{
 						"name": "id",
 						"in": "path",
 						"required": true,
-						"type": "string"
+						"type": "string",
+						"description": "ID của danh mục"
 					}
 				],
 				"responses": {
 					"200": {
-						"description": "OK"
+						"description": "Khôi phục thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Khôi phục danh mục thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"deleted": {
+											"type": "boolean",
+											"example": false
+										},
+										"deletedAt": {
+											"type": "null",
+											"example": null
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
 					}
 				}
 			}
@@ -1313,82 +1538,101 @@
 								}
 							}
 						}
+					},
+					"404": {
+						"description": "Không tìm thấy thông tin người dùng",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Không tìm thấy thông tin người dùng"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 404
+								}
+							}
+						}
 					}
 				}
 			}
 		},
-		
-"/wishlist": {
-  "post": {
-    "summary": "Thêm sản phẩm vào wishlist",
-    "parameters": [
-      {
-        "in": "body",
-        "name": "body",
-        "description": "user_id và product_id",
-        "required": true,
-        "schema": {
-          "type": "object",
-          "properties": {
-            "user_id": { "type": "string" },
-            "product_id": { "type": "string" }
-          },
-          "required": ["user_id", "product_id"]
-        }
-      }
-    ],
-    "responses": {
-      "201": {
-        "description": "Thêm thành công"
-      },
-      "400": {
-        "description": "Đã có trong wishlist"
-      }
-    }
-  },
-  "delete": {
-    "summary": "Xóa sản phẩm khỏi wishlist",
-    "parameters": [
-      {
-        "in": "body",
-        "name": "body",
-        "description": "user_id và product_id",
-        "required": true,
-        "schema": {
-          "type": "object",
-          "properties": {
-            "user_id": { "type": "string" },
-            "product_id": { "type": "string" }
-          },
-          "required": ["user_id", "product_id"]
-        }
-      }
-    ],
-    "responses": {
-      "200": {
-        "description": "Đã xóa khỏi wishlist"
-      }
-    }
-  }
-},
-"/wishlist/{user_id}": {
-  "get": {
-    "summary": "Lấy danh sách wishlist của user",
-    "parameters": [
-      {
-        "name": "user_id",
-        "in": "path",
-        "required": true,
-        "type": "string"
-      }
-    ],
-    "responses": {
-      "200": {
-        "description": "Danh sách wishlist"
-      }
-    }
-  }
-},
+		"/wishlist": {
+			"post": {
+				"summary": "Thêm sản phẩm vào wishlist",
+				"parameters": [
+					{
+						"in": "body",
+						"name": "body",
+						"description": "user_id và product_id",
+						"required": true,
+						"schema": {
+							"type": "object",
+							"properties": {
+								"user_id": { "type": "string" },
+								"product_id": { "type": "string" }
+							},
+							"required": ["user_id", "product_id"]
+						}
+					}
+				],
+				"responses": {
+					"201": {
+						"description": "Thêm thành công"
+					},
+					"400": {
+						"description": "Đã có trong wishlist"
+					}
+				}
+			},
+			"delete": {
+				"summary": "Xóa sản phẩm khỏi wishlist",
+				"parameters": [
+					{
+						"in": "body",
+						"name": "body",
+						"description": "user_id và product_id",
+						"required": true,
+						"schema": {
+							"type": "object",
+							"properties": {
+								"user_id": { "type": "string" },
+								"product_id": { "type": "string" }
+							},
+							"required": ["user_id", "product_id"]
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Đã xóa khỏi wishlist"
+					}
+				}
+			}
+		},
+		"/wishlist/{user_id}": {
+			"get": {
+				"summary": "Lấy danh sách wishlist của user",
+				"parameters": [
+					{
+						"name": "user_id",
+						"in": "path",
+						"required": true,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Danh sách wishlist"
+					}
+				}
+			}
+		},
 		"/user/update-info-user": {
 			"post": {
 				"tags": ["User"],
@@ -1537,120 +1781,1337 @@
 			}
 		},
 		"/coupon": {
-  "post": {
-    "tags": ["Coupon"],
-    "summary": "Tạo mã giảm giá",
-    "description": "Tạo mới một mã giảm giá (coupon/voucher)",
-    "parameters": [
-      {
-        "name": "body",
-        "in": "body",
-        "required": true,
-        "schema": {
-          "type": "object",
-          "required": [
-            "code",
-            "discount_type",
-            "discount_value",
-            "min_purchase",
-            "quantity",
-            "start_date",
-            "end_date"
-          ],
-          "properties": {
-            "code": {
-              "type": "string",
-              "example": "SALE2025"
-            },
-            "discount_type": {
-              "type": "string",
-              "enum": ["percent", "amount"],
-              "example": "percent"
-            },
-            "discount_value": {
-              "type": "number",
-              "example": 10
-            },
-            "min_purchase": {
-              "type": "number",
-              "example": 200000
-            },
-            "quantity": {
-              "type": "number",
-              "example": 100
-            },
-            "start_date": {
-              "type": "string",
-              "format": "date-time",
-              "example": "2025-06-01T00:00:00.000Z"
-            },
-            "end_date": {
-              "type": "string",
-              "format": "date-time",
-              "example": "2025-06-30T23:59:59.000Z"
-            },
-            "conditions": {
-              "type": "object",
-              "example": { "userType": "new", "productIds": ["123", "456"] }
-            }
-          }
-        }
-      }
-    ],
-    "responses": {
-      "201": {
-        "description": "Tạo mã giảm giá thành công"
-      },
-      "400": {
-        "description": "Mã coupon đã tồn tại"
-      },
-      "500": {
-        "description": "Lỗi server"
-      }
-    }
-  }
-},
-"/coupon/{id}": {
-  "put": {
-    "tags": ["Coupon"],
-    "summary": "Cập nhật mã giảm giá",
-    "description": "Cập nhật thông tin mã giảm giá theo ID",
-    "parameters": [
-      {
-        "name": "id",
-        "in": "path",
-        "required": true,
-        "type": "string",
-        "description": "ID của mã giảm giá"
-      },
-      {
-        "name": "body",
-        "in": "body",
-        "required": true,
-        "schema": {
-          "type": "object",
-          "properties": {
-            "code": { "type": "string", "example": "SALE2025" },
-            "discount_type": { "type": "string", "enum": ["percent", "amount"], "example": "percent" },
-            "discount_value": { "type": "number", "example": 10 },
-            "min_purchase": { "type": "number", "example": 200000 },
-            "quantity": { "type": "number", "example": 100 },
-            "start_date": { "type": "string", "format": "date-time", "example": "2025-06-01T00:00:00.000Z" },
-            "end_date": { "type": "string", "format": "date-time", "example": "2025-06-30T23:59:59.000Z" },
-            "conditions": { "type": "object", "example": { "userType": "new" } }
-          }
-        }
-      }
-    ],
-    "responses": {
-      "200": { "description": "Cập nhật mã giảm giá thành công" },
-      "400": { "description": "Mã coupon đã tồn tại" },
-      "404": { "description": "Không tìm thấy coupon" },
-      "500": { "description": "Lỗi server" }
-    }
-  }
-}
-
+			"post": {
+				"tags": ["Coupon"],
+				"summary": "Tạo mã giảm giá",
+				"description": "Tạo mới một mã giảm giá (coupon/voucher)",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"type": "object",
+							"required": [
+								"code",
+								"discount_type",
+								"discount_value",
+								"min_purchase",
+								"quantity",
+								"start_date",
+								"end_date"
+							],
+							"properties": {
+								"code": {
+									"type": "string",
+									"example": "SALE2025"
+								},
+								"discount_type": {
+									"type": "string",
+									"enum": ["percent", "amount"],
+									"example": "percent"
+								},
+								"discount_value": {
+									"type": "number",
+									"example": 10
+								},
+								"min_purchase": {
+									"type": "number",
+									"example": 200000
+								},
+								"quantity": {
+									"type": "number",
+									"example": 100
+								},
+								"start_date": {
+									"type": "string",
+									"format": "date-time",
+									"example": "2025-06-01T00:00:00.000Z"
+								},
+								"end_date": {
+									"type": "string",
+									"format": "date-time",
+									"example": "2025-06-30T23:59:59.000Z"
+								},
+								"conditions": {
+									"type": "object",
+									"example": { "userType": "new", "productIds": ["123", "456"] }
+								}
+							}
+						}
+					}
+				],
+				"responses": {
+					"201": {
+						"description": "Tạo mã giảm giá thành công"
+					},
+					"400": {
+						"description": "Mã coupon đã tồn tại"
+					},
+					"500": {
+						"description": "Lỗi server"
+					}
+				}
+			}
+		},
+		"/coupon/{id}": {
+			"put": {
+				"tags": ["Coupon"],
+				"summary": "Cập nhật mã giảm giá",
+				"description": "Cập nhật thông tin mã giảm giá theo ID",
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"type": "string",
+						"description": "ID của mã giảm giá"
+					},
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": { "type": "string", "example": "SALE2025" },
+								"discount_type": { "type": "string", "enum": ["percent", "amount"], "example": "percent" },
+								"discount_value": { "type": "number", "example": 10 },
+								"min_purchase": { "type": "number", "example": 200000 },
+								"quantity": { "type": "number", "example": 100 },
+								"start_date": { "type": "string", "format": "date-time", "example": "2025-06-01T00:00:00.000Z" },
+								"end_date": { "type": "string", "format": "date-time", "example": "2025-06-30T23:59:59.000Z" },
+								"conditions": { "type": "object", "example": { "userType": "new" } }
+							}
+						}
+					}
+				],
+				"responses": {
+					"200": { "description": "Cập nhật mã giảm giá thành công" },
+					"400": { "description": "Mã coupon đã tồn tại" },
+					"404": { "description": "Không tìm thấy coupon" },
+					"500": { "description": "Lỗi server" }
+				}
+			}
+		},
+		"/cart/add": {
+			"post": {
+				"tags": ["Cart"],
+				"summary": "Thêm sản phẩm vào giỏ hàng",
+				"description": "Thêm một sản phẩm với biến thể vào giỏ hàng của người dùng",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"type": "object",
+							"required": ["product_id", "quantity", "variant_id"],
+							"properties": {
+								"product_id": {
+									"type": "string",
+									"example": "65f2e8b7c261e6001234abcd"
+								},
+								"quantity": {
+									"type": "integer",
+									"minimum": 1,
+									"example": 2
+								},
+								"variant_id": {
+									"type": "string",
+									"example": "65f2e8b7c261e6001234abce"
+								}
+							}
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Thêm vào giỏ hàng thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Thêm vào giỏ hàng thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"products": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"product_id": {
+														"type": "object",
+														"properties": {
+															"_id": {
+																"type": "string",
+																"example": "65f2e8b7c261e6001234abcd"
+															},
+															"title": {
+																"type": "string",
+																"example": "Áo thun nam"
+															},
+															"price": {
+																"type": "number",
+																"example": 200000
+															},
+															"discountPercentage": {
+																"type": "number",
+																"example": 10
+															},
+															"thumbnails": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"example": ["https://example.com/image1.jpg"]
+															}
+														}
+													},
+													"quantity": {
+														"type": "integer",
+														"example": 2
+													},
+													"variant_id": {
+														"type": "string",
+														"example": "65f2e8b7c261e6001234abce"
+													},
+													"variantDetails": {
+														"type": "object",
+														"properties": {
+															"size": {
+																"type": "string",
+																"example": "M"
+															},
+															"stock": {
+																"type": "integer",
+																"example": 50
+															}
+														}
+													},
+													"addedAt": {
+														"type": "string",
+														"format": "date-time",
+														"example": "2024-03-14T10:00:00.000Z"
+													}
+												}
+											}
+										},
+										"totalPrice": {
+											"type": "number",
+											"example": 360000
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Lỗi dữ liệu",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Số lượng phải lớn hơn 0"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 400
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/cart/update": {
+			"put": {
+				"tags": ["Cart"],
+				"summary": "Cập nhật số lượng sản phẩm trong giỏ hàng",
+				"description": "Cập nhật số lượng của một sản phẩm trong giỏ hàng",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"type": "object",
+							"required": ["product_id", "quantity", "variant_id"],
+							"properties": {
+								"product_id": {
+									"type": "string",
+									"example": "65f2e8b7c261e6001234abcd"
+								},
+								"quantity": {
+									"type": "integer",
+									"minimum": 1,
+									"example": 3
+								},
+								"variant_id": {
+									"type": "string",
+									"example": "65f2e8b7c261e6001234abce"
+								}
+							}
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Cập nhật giỏ hàng thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Cập nhật giỏ hàng thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"products": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"product_id": {
+														"type": "object",
+														"properties": {
+															"_id": {
+																"type": "string",
+																"example": "65f2e8b7c261e6001234abcd"
+															},
+															"title": {
+																"type": "string",
+																"example": "Áo thun nam"
+															},
+															"price": {
+																"type": "number",
+																"example": 200000
+															},
+															"discountPercentage": {
+																"type": "number",
+																"example": 10
+															},
+															"thumbnails": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"example": ["https://example.com/image1.jpg"]
+															}
+														}
+													},
+													"quantity": {
+														"type": "integer",
+														"example": 3
+													},
+													"variant_id": {
+														"type": "string",
+														"example": "65f2e8b7c261e6001234abce"
+													},
+													"variantDetails": {
+														"type": "object",
+														"properties": {
+															"size": {
+																"type": "string",
+																"example": "M"
+															},
+															"stock": {
+																"type": "integer",
+																"example": 50
+															}
+														}
+													}
+												}
+											}
+										},
+										"totalPrice": {
+											"type": "number",
+											"example": 540000
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/cart/delete": {
+			"delete": {
+				"tags": ["Cart"],
+				"summary": "Xóa sản phẩm khỏi giỏ hàng",
+				"description": "Xóa một sản phẩm với biến thể khỏi giỏ hàng",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"type": "object",
+							"required": ["product_id", "variant_id"],
+							"properties": {
+								"product_id": {
+									"type": "string",
+									"example": "65f2e8b7c261e6001234abcd"
+								},
+								"variant_id": {
+									"type": "string",
+									"example": "65f2e8b7c261e6001234abce"
+								}
+							}
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Xóa sản phẩm khỏi giỏ hàng thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Xóa sản phẩm khỏi giỏ hàng thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"products": {
+											"type": "array",
+											"items": {
+												"type": "object"
+											}
+										},
+										"totalPrice": {
+											"type": "number",
+											"example": 0
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/cart": {
+			"get": {
+				"tags": ["Cart"],
+				"summary": "Lấy thông tin giỏ hàng",
+				"description": "Lấy thông tin chi tiết giỏ hàng của người dùng",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Lấy giỏ hàng thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Lấy giỏ hàng thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"products": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"product_id": {
+														"type": "object",
+														"properties": {
+															"_id": {
+																"type": "string",
+																"example": "65f2e8b7c261e6001234abcd"
+															},
+															"title": {
+																"type": "string",
+																"example": "Áo thun nam"
+															},
+															"price": {
+																"type": "number",
+																"example": 200000
+															},
+															"discountPercentage": {
+																"type": "number",
+																"example": 10
+															},
+															"thumbnails": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"example": ["https://example.com/image1.jpg"]
+															}
+														}
+													},
+													"quantity": {
+														"type": "integer",
+														"example": 2
+													},
+													"variant_id": {
+														"type": "string",
+														"example": "65f2e8b7c261e6001234abce"
+													},
+													"variantDetails": {
+														"type": "object",
+														"properties": {
+															"size": {
+																"type": "string",
+																"example": "M"
+															},
+															"stock": {
+																"type": "integer",
+																"example": 50
+															}
+														}
+													}
+												}
+											}
+										},
+										"totalPrice": {
+											"type": "number",
+											"example": 360000
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/products": {
+			"get": {
+				"tags": ["Products"],
+				"summary": "Lấy danh sách sản phẩm",
+				"description": "Lấy danh sách sản phẩm với tìm kiếm, phân trang và sắp xếp",
+				"parameters": [
+					{
+						"name": "page",
+						"in": "query",
+						"type": "integer",
+						"description": "Số trang",
+						"default": 1
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"type": "integer",
+						"description": "Số sản phẩm mỗi trang",
+						"default": 10
+					},
+					{
+						"name": "search",
+						"in": "query",
+						"type": "string",
+						"description": "Từ khóa tìm kiếm"
+					},
+					{
+						"name": "includeDeleted",
+						"in": "query",
+						"type": "boolean",
+						"description": "Bao gồm sản phẩm đã xóa",
+						"default": false
+					},
+					{
+						"name": "sortBy",
+						"in": "query",
+						"type": "string",
+						"description": "Sắp xếp theo trường",
+						"default": "createdAt"
+					},
+					{
+						"name": "order",
+						"in": "query",
+						"type": "string",
+						"enum": ["asc", "desc"],
+						"description": "Thứ tự sắp xếp",
+						"default": "desc"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Lấy danh sách thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Lấy danh sách sản phẩm thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"products": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"_id": {
+														"type": "string",
+														"example": "65f2e8b7c261e6001234abcd"
+													},
+													"title": {
+														"type": "string",
+														"example": "Áo thun nam"
+													},
+													"price": {
+														"type": "number",
+														"example": 200000
+													},
+													"discountPercentage": {
+														"type": "number",
+														"example": 10
+													},
+													"currentPrice": {
+														"type": "number",
+														"example": 180000
+													},
+													"isDiscounted": {
+														"type": "boolean",
+														"example": true
+													},
+													"discountInfo": {
+														"type": "object",
+														"properties": {
+															"originalPrice": {
+																"type": "number",
+																"example": 200000
+															},
+															"discountPercentage": {
+																"type": "number",
+																"example": 10
+															},
+															"discountStartDate": {
+																"type": "string",
+																"format": "date-time",
+																"example": "2024-03-01T00:00:00.000Z"
+															},
+															"discountEndDate": {
+																"type": "string",
+																"format": "date-time",
+																"example": "2024-03-31T23:59:59.000Z"
+															}
+														}
+													},
+													"thumbnails": {
+														"type": "array",
+														"items": {
+															"type": "string"
+														},
+														"example": ["https://example.com/image1.jpg"]
+													},
+													"category": {
+														"type": "object",
+														"properties": {
+															"id": {
+																"type": "string",
+																"example": "65f2e8b7c261e6001234abce"
+															},
+															"name": {
+																"type": "string",
+																"example": "Áo thun"
+															},
+															"parent": {
+																"type": "object",
+																"properties": {
+																	"id": {
+																		"type": "string",
+																		"example": "65f2e8b7c261e6001234abcf"
+																	},
+																	"name": {
+																		"type": "string",
+																		"example": "Thời trang nam"
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										},
+										"pagination": {
+											"type": "object",
+											"properties": {
+												"page": {
+													"type": "integer",
+													"example": 1
+												},
+												"limit": {
+													"type": "integer",
+													"example": 10
+												},
+												"total": {
+													"type": "integer",
+													"example": 100
+												},
+												"totalPages": {
+													"type": "integer",
+													"example": 10
+												}
+											}
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": ["Products"],
+				"summary": "Thêm sản phẩm mới",
+				"description": "Thêm một sản phẩm mới vào hệ thống",
+				"consumes": [
+					"multipart/form-data"
+				],
+				"parameters": [
+					{
+						"name": "thumbnails",
+						"in": "formData",
+						"type": "array",
+						"items": {
+							"type": "file"
+						},
+						"description": "Ảnh sản phẩm (tối đa 5MB mỗi ảnh, định dạng: jpg, png, gif, webp)"
+					},
+					{
+						"name": "title",
+						"in": "formData",
+						"type": "string",
+						"required": true,
+						"description": "Tên sản phẩm"
+					},
+					{
+						"name": "product_category_id",
+						"in": "formData",
+						"type": "string",
+						"required": true,
+						"description": "ID danh mục sản phẩm"
+					},
+					{
+						"name": "price",
+						"in": "formData",
+						"type": "number",
+						"required": true,
+						"description": "Giá sản phẩm"
+					},
+					{
+						"name": "description",
+						"in": "formData",
+						"type": "string",
+						"description": "Mô tả sản phẩm"
+					},
+					{
+						"name": "variants",
+						"in": "formData",
+						"type": "string",
+						"required": true,
+						"description": "JSON string chứa thông tin biến thể sản phẩm"
+					},
+					{
+						"name": "position",
+						"in": "formData",
+						"type": "integer",
+						"description": "Vị trí hiển thị"
+					}
+				],
+				"responses": {
+					"201": {
+						"description": "Thêm sản phẩm thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Thêm sản phẩm thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"title": {
+											"type": "string",
+											"example": "Áo thun nam"
+										},
+										"price": {
+											"type": "number",
+											"example": 200000
+										},
+										"description": {
+											"type": "string",
+											"example": "Áo thun nam chất liệu cotton"
+										},
+										"thumbnails": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											},
+											"example": ["https://example.com/image1.jpg"]
+										},
+										"variants": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"size": {
+														"type": "string",
+														"example": "M"
+													},
+													"stock": {
+														"type": "integer",
+														"example": 50
+													}
+												}
+											}
+										},
+										"product_category_id": {
+											"type": "object",
+											"properties": {
+												"_id": {
+													"type": "string",
+													"example": "65f2e8b7c261e6001234abce"
+												},
+												"title": {
+													"type": "string",
+													"example": "Áo thun"
+												}
+											}
+										},
+										"position": {
+											"type": "integer",
+											"example": 1
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 201
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Lỗi dữ liệu",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Tên sản phẩm không được để trống"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 400
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/products/{id}": {
+			"get": {
+				"tags": ["Products"],
+				"summary": "Lấy thông tin sản phẩm theo ID",
+				"description": "Lấy thông tin chi tiết của một sản phẩm",
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"type": "string",
+						"description": "ID của sản phẩm"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Lấy thông tin thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Lấy sản phẩm thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"title": {
+											"type": "string",
+											"example": "Áo thun nam"
+										},
+										"price": {
+											"type": "number",
+											"example": 200000
+										},
+										"discountPercentage": {
+											"type": "number",
+											"example": 10
+										},
+										"currentPrice": {
+											"type": "number",
+											"example": 180000
+										},
+										"isDiscounted": {
+											"type": "boolean",
+											"example": true
+										},
+										"discountInfo": {
+											"type": "object",
+											"properties": {
+												"originalPrice": {
+													"type": "number",
+													"example": 200000
+												},
+												"discountPercentage": {
+													"type": "number",
+													"example": 10
+												},
+												"discountStartDate": {
+													"type": "string",
+													"format": "date-time",
+													"example": "2024-03-01T00:00:00.000Z"
+												},
+												"discountEndDate": {
+													"type": "string",
+													"format": "date-time",
+													"example": "2024-03-31T23:59:59.000Z"
+												}
+											}
+										},
+										"description": {
+											"type": "string",
+											"example": "Áo thun nam chất liệu cotton"
+										},
+										"thumbnails": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											},
+											"example": ["https://example.com/image1.jpg"]
+										},
+										"variants": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"size": {
+														"type": "string",
+														"example": "M"
+													},
+													"stock": {
+														"type": "integer",
+														"example": 50
+													}
+												}
+											}
+										},
+										"product_category_id": {
+											"type": "object",
+											"properties": {
+												"_id": {
+													"type": "string",
+													"example": "65f2e8b7c261e6001234abce"
+												},
+												"title": {
+													"type": "string",
+													"example": "Áo thun"
+												}
+											}
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Không tìm thấy sản phẩm",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Sản phẩm không tồn tại hoặc đã bị xóa"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			},
+			"patch": {
+				"tags": ["Products"],
+				"summary": "Cập nhật sản phẩm",
+				"description": "Cập nhật thông tin của một sản phẩm",
+				"consumes": [
+					"multipart/form-data"
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"type": "string",
+						"description": "ID của sản phẩm"
+					},
+					{
+						"name": "thumbnails",
+						"in": "formData",
+						"type": "array",
+						"items": {
+							"type": "file"
+						},
+						"description": "Ảnh sản phẩm (tối đa 5MB mỗi ảnh, định dạng: jpg, png, gif, webp)"
+					},
+					{
+						"name": "title",
+						"in": "formData",
+						"type": "string",
+						"description": "Tên sản phẩm"
+					},
+					{
+						"name": "product_category_id",
+						"in": "formData",
+						"type": "string",
+						"description": "ID danh mục sản phẩm"
+					},
+					{
+						"name": "price",
+						"in": "formData",
+						"type": "number",
+						"description": "Giá sản phẩm"
+					},
+					{
+						"name": "description",
+						"in": "formData",
+						"type": "string",
+						"description": "Mô tả sản phẩm"
+					},
+					{
+						"name": "variants",
+						"in": "formData",
+						"type": "string",
+						"description": "JSON string chứa thông tin biến thể sản phẩm"
+					},
+					{
+						"name": "position",
+						"in": "formData",
+						"type": "integer",
+						"description": "Vị trí hiển thị"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Cập nhật thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Cập nhật sản phẩm thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"title": {
+											"type": "string",
+											"example": "Áo thun nam"
+										},
+										"price": {
+											"type": "number",
+											"example": 200000
+										},
+										"description": {
+											"type": "string",
+											"example": "Áo thun nam chất liệu cotton"
+										},
+										"thumbnails": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											},
+											"example": ["https://example.com/image1.jpg"]
+										},
+										"variants": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"size": {
+														"type": "string",
+														"example": "M"
+													},
+													"stock": {
+														"type": "integer",
+														"example": 50
+													}
+												}
+											}
+										},
+										"product_category_id": {
+											"type": "object",
+											"properties": {
+												"_id": {
+													"type": "string",
+													"example": "65f2e8b7c261e6001234abce"
+												},
+												"title": {
+													"type": "string",
+													"example": "Áo thun"
+												}
+											}
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Không tìm thấy sản phẩm",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Sản phẩm không tồn tại hoặc đã bị xóa"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/products/soft-delete/{id}": {
+			"delete": {
+				"tags": ["Products"],
+				"summary": "Xóa mềm sản phẩm",
+				"description": "Đánh dấu sản phẩm là đã xóa (soft delete)",
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"type": "string",
+						"description": "ID của sản phẩm"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Xóa mềm thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Xóa mềm sản phẩm thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"deleted": {
+											"type": "boolean",
+											"example": true
+										},
+										"deletedAt": {
+											"type": "string",
+											"format": "date-time",
+											"example": "2024-03-14T10:00:00.000Z"
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/products/restore/{id}": {
+			"patch": {
+				"tags": ["Products"],
+				"summary": "Khôi phục sản phẩm",
+				"description": "Khôi phục sản phẩm đã bị xóa mềm",
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"type": "string",
+						"description": "ID của sản phẩm"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Khôi phục thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Khôi phục sản phẩm thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"deleted": {
+											"type": "boolean",
+											"example": false
+										},
+										"deletedAt": {
+											"type": "null",
+											"example": null
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	},
 	"securityDefinitions": {
 		"BearerAuth": {
@@ -1660,8 +3121,5 @@
 			"description": "JWT token. Example: 'Bearer {token}'"
 		}
 	}
-	
-
-	
 }
 

@@ -45,6 +45,8 @@ const productBaseSchema = z.object({
   price: z.coerce.number().positive("Giá phải lớn hơn 0"),
   description: z.string().optional(),
   discountPercentage: z.coerce.number().min(0).max(100).optional(),
+  discountStartDate: z.string().datetime().optional(),
+  discountEndDate: z.string().datetime().optional(),
   status: z.string().optional(),
   position: z.coerce.number().int().optional(),
   thumbnails: z.array(z.object({
@@ -56,14 +58,64 @@ const productBaseSchema = z.object({
 });
 
 // Schema cho tạo sản phẩm mới
-export const createProductSchema = productBaseSchema.extend({
+export const createProductSchema = z.object({
+  ...productBaseSchema.shape,
   variants: variantsSchema
-});
+}).refine(
+  (data) => {
+    // Nếu có discountPercentage thì phải có cả start và end date
+    if (data.discountPercentage > 0) {
+      return data.discountStartDate && data.discountEndDate;
+    }
+    return true;
+  },
+  {
+    message: "Khi có giảm giá phải có thời gian bắt đầu và kết thúc",
+    path: ["discountStartDate", "discountEndDate"]
+  }
+).refine(
+  (data) => {
+    // Kiểm tra thời gian kết thúc phải sau thời gian bắt đầu
+    if (data.discountStartDate && data.discountEndDate) {
+      return new Date(data.discountEndDate) > new Date(data.discountStartDate);
+    }
+    return true;
+  },
+  {
+    message: "Thời gian kết thúc phải sau thời gian bắt đầu",
+    path: ["discountEndDate"]
+  }
+);
 
 // Schema cho cập nhật sản phẩm
-export const updateProductSchema = productBaseSchema.partial().extend({
+export const updateProductSchema = z.object({
+  ...productBaseSchema.shape,
   variants: variantsSchema.optional()
-});
+}).partial().refine(
+  (data) => {
+    // Nếu có discountPercentage thì phải có cả start và end date
+    if (data.discountPercentage > 0) {
+      return data.discountStartDate && data.discountEndDate;
+    }
+    return true;
+  },
+  {
+    message: "Khi có giảm giá phải có thời gian bắt đầu và kết thúc",
+    path: ["discountStartDate", "discountEndDate"]
+  }
+).refine(
+  (data) => {
+    // Kiểm tra thời gian kết thúc phải sau thời gian bắt đầu
+    if (data.discountStartDate && data.discountEndDate) {
+      return new Date(data.discountEndDate) > new Date(data.discountStartDate);
+    }
+    return true;
+  },
+  {
+    message: "Thời gian kết thúc phải sau thời gian bắt đầu",
+    path: ["discountEndDate"]
+  }
+);
 
 // Schema cho thêm biến thể
 export const addVariantsSchema = z.object({

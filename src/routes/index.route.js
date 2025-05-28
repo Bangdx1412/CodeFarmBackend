@@ -5,6 +5,8 @@ import authRoute  from "./auth.route.js";
 import wishlistRoute from "./wishlist.route.js";
 import userRoute  from "./user.route.js";
 import couponRoute from "./coupon.route.js";
+import cartRoute from "./cart.route.js";
+
 const routes = Router();
 
 routes.use("/products", productRoute)
@@ -14,6 +16,7 @@ routes.use("/auth", authRoute)
 routes.use("/wishlist", wishlistRoute);
 routes.use("/user", userRoute)
 routes.use("/coupon", couponRoute);
+routes.use("/cart", cartRoute);
 
 // routes.use("/products", hanldeProduct...)
 // routes.use("/products", hanldeProduct...)

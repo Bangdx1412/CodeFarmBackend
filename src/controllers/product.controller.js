@@ -31,11 +31,22 @@ export const getProducts = async (req, res, next) => {
         }
       });
 
-    // Format products with category information
+    // Format products with category information and discounted price
     const formattedProducts = products.map(product => {
       const category = product.product_category_id;
+      const discountedPrice = product.getDiscountedPrice();
+      const isDiscounted = discountedPrice < product.price;
+      
       return {
         ...product.toObject(),
+        currentPrice: discountedPrice,
+        isDiscounted,
+        discountInfo: isDiscounted ? {
+          originalPrice: product.price,
+          discountPercentage: product.discountPercentage,
+          discountStartDate: product.discountStartDate,
+          discountEndDate: product.discountEndDate
+        } : null,
         category: {
           id: category?._id,
           name: category?.title,
@@ -110,7 +121,24 @@ export const getProductById = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-    sendSuccess(res, product, PRODUCT_MESSAGES.GET_BY_ID_SUCCESS);
+
+    // Add discounted price information
+    const discountedPrice = product.getDiscountedPrice();
+    const isDiscounted = discountedPrice < product.price;
+    
+    const formattedProduct = {
+      ...product.toObject(),
+      currentPrice: discountedPrice,
+      isDiscounted,
+      discountInfo: isDiscounted ? {
+        originalPrice: product.price,
+        discountPercentage: product.discountPercentage,
+        discountStartDate: product.discountStartDate,
+        discountEndDate: product.discountEndDate
+      } : null
+    };
+
+    sendSuccess(res, formattedProduct, PRODUCT_MESSAGES.GET_BY_ID_SUCCESS);
   } catch (error) {
     next(error);
   }
