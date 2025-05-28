@@ -31,3 +31,21 @@ export const COUPON_MESSAGES = {
   NOT_FOUND: "Không tìm thấy coupon",
   SERVER_ERROR: "Lỗi server"
 };
+
+export const CART_MESSAGES = {
+  ADD_SUCCESS: "Thêm vào giỏ hàng thành công",
+  UPDATE_SUCCESS: "Cập nhật giỏ hàng thành công",
+  REMOVE_SUCCESS: "Xóa sản phẩm khỏi giỏ hàng thành công",
+  GET_SUCCESS: "Lấy giỏ hàng thành công",
+  EMPTY_CART: "Giỏ hàng trống",
+  NOT_FOUND: "Không tìm thấy giỏ hàng",
+  PRODUCT_NOT_FOUND: "Sản phẩm không tồn tại",
+  VARIANT_NOT_FOUND: "Không tìm thấy biến thể sản phẩm",
+  INVALID_VARIANT: "ID biến thể không hợp lệ",
+  QUANTITY_REQUIRED: "Số lượng phải lớn hơn 0",
+  INSUFFICIENT_STOCK: "Số lượng sản phẩm trong kho không đủ",
+  INSUFFICIENT_VARIANT_STOCK: "Số lượng biến thể trong kho không đủ",
+  ITEM_NOT_FOUND: "Không tìm thấy sản phẩm hoặc biến thể trong giỏ hàng",
+  ITEM_NOT_FOUND_TO_REMOVE: "Không tìm thấy sản phẩm hoặc biến thể trong giỏ hàng để xóa",
+  INVALID_INPUT: "Dữ liệu không hợp lệ"
+};

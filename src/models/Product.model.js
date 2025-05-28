@@ -12,7 +12,20 @@ const productSchema = new mongoose.Schema({
     default: ""
   },
   price: Number,
-  discountPercentage: Number,
+  discountPercentage: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: 0
+  },
+  discountStartDate: {
+    type: Date,
+    default: null
+  },
+  discountEndDate: {
+    type: Date,
+    default: null
+  },
   stock: Number, // tổng số lượng tồn kho (tính tổng từ các biến thể)
   thumbnails: [
     {
@@ -43,6 +56,22 @@ const productSchema = new mongoose.Schema({
     }
   ]
 }, { timestamps: true, versionKey: false });
+
+// Thêm method để tính giá sau khi giảm
+productSchema.methods.getDiscountedPrice = function() {
+  const now = new Date();
+  if (
+    this.discountPercentage > 0 &&
+    this.discountStartDate &&
+    this.discountEndDate &&
+    now >= this.discountStartDate &&
+    now <= this.discountEndDate
+  ) {
+    return this.price * (1 - this.discountPercentage / 100);
+  }
+  return this.price;
+};
+
 const Product = mongoose.model("Product", productSchema,"products");
 
 export default Product;
