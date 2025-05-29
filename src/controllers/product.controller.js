@@ -297,7 +297,7 @@ export const softDeleteProduct = async (req, res, next) => {
       }
     });
 
-    sendSuccess(res, populatedProduct, PRODUCT_MESSAGES.SOFT_DELETE_SUCCESS);
+    return sendSuccess(res, populatedProduct, PRODUCT_MESSAGES.SOFT_DELETE_SUCCESS);
   } catch (error) {
     next(error);
   }
