@@ -3111,7 +3111,477 @@
 					}
 				}
 			}
-		}
+		},
+		
+"/contact": {
+  "get": {
+    "tags": ["Contact"],
+    "summary": "Lấy danh sách liên hệ",
+    "description": "Lấy danh sách liên hệ với tìm kiếm và phân trang",
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "type": "integer",
+        "description": "Số trang",
+        "default": 1
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "type": "integer",
+        "description": "Số liên hệ mỗi trang",
+        "default": 10
+      },
+      {
+        "name": "search",
+        "in": "query",
+        "type": "string",
+        "description": "Từ khóa tìm kiếm theo tên, email, số điện thoại"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Lấy danh sách liên hệ thành công",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string", "example": "Lấy danh sách liên hệ thành công" },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "_id": { "type": "string", "example": "6658c2e1b1a2c3d4e5f6a7b8" },
+                  "name": { "type": "string", "example": "Nguyễn Văn A" },
+                  "email": { "type": "string", "example": "vana@example.com" },
+                  "phone": { "type": "string", "example": "0123456789" },
+                  "note": { "type": "string", "example": "Khách hàng tiềm năng" }
+                }
+              }
+            },
+            "pagination": {
+              "type": "object",
+              "properties": {
+                "total": { "type": "integer", "example": 20 },
+                "page": { "type": "integer", "example": 1 },
+                "limit": { "type": "integer", "example": 10 },
+                "totalPages": { "type": "integer", "example": 2 }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "post": {
+    "tags": ["Contact"],
+    "summary": "Thêm liên hệ mới",
+    "description": "Thêm một liên hệ mới vào hệ thống",
+    "parameters": [
+      {
+        "name": "body",
+        "in": "body",
+        "required": true,
+        "schema": {
+          "type": "object",
+          "required": ["name", "email", "phone"],
+          "properties": {
+            "name": { "type": "string", "example": "Nguyễn Văn A" },
+            "email": { "type": "string", "example": "vana@example.com" },
+            "phone": { "type": "string", "example": "0123456789" },
+            "note": { "type": "string", "example": "Khách hàng tiềm năng" }
+          }
+        }
+      }
+    ],
+    "responses": {
+      "201": {
+        "description": "Thêm liên hệ thành công",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string", "example": "Thêm liên hệ thành công" },
+            "data": {
+              "type": "object",
+              "properties": {
+                "_id": { "type": "string", "example": "6658c2e1b1a2c3d4e5f6a7b8" },
+                "name": { "type": "string", "example": "Nguyễn Văn A" },
+                "email": { "type": "string", "example": "vana@example.com" },
+                "phone": { "type": "string", "example": "0123456789" },
+                "note": { "type": "string", "example": "Khách hàng tiềm năng" }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Lỗi dữ liệu",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "error": { "type": "string", "example": "Email không hợp lệ" }
+          }
+        }
+      }
+    }
+  }
+},
+"/contact/{id}": {
+  "delete": {
+    "tags": ["Contact"],
+    "summary": "Xóa liên hệ",
+    "description": "Xóa liên hệ theo id",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "type": "string",
+        "description": "ID của liên hệ"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Xóa liên hệ thành công",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string", "example": "Xóa liên hệ thành công" }
+          }
+        }
+      },
+      "404": {
+        "description": "Không tìm thấy liên hệ",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "error": { "type": "string", "example": "Không tìm thấy liên hệ" }
+          }
+        }
+      }
+    }
+  }
+},
+"/banners": {
+  "get": {
+    "tags": ["Banner"],
+    "summary": "Lấy danh sách banner",
+    "description": "Lấy danh sách banner với tìm kiếm và phân trang",
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "type": "integer",
+        "description": "Số trang",
+        "default": 1
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "type": "integer",
+        "description": "Số banner mỗi trang",
+        "default": 10
+      },
+      {
+        "name": "search",
+        "in": "query",
+        "type": "string",
+        "description": "Tìm kiếm theo tiêu đề banner"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Lấy danh sách banner thành công",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string", "example": "Lấy danh sách banner thành công" },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "_id": { "type": "string", "example": "6658c2e1b1a2c3d4e5f6a7b8" },
+                  "title": { "type": "string", "example": "Banner Sale" },
+                  "image": { "type": "string", "example": "/uploads/banner1.jpg" },
+                  "link": { "type": "string", "example": "https://example.com" },
+                  "description": { "type": "string", "example": "Banner giảm giá lớn" },
+                  "isActive": { "type": "boolean", "example": true }
+                }
+              }
+            },
+            "pagination": {
+              "type": "object",
+              "properties": {
+                "total": { "type": "integer", "example": 20 },
+                "page": { "type": "integer", "example": 1 },
+                "limit": { "type": "integer", "example": 10 },
+                "totalPages": { "type": "integer", "example": 2 }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "post": {
+    "tags": ["Banner"],
+    "summary": "Thêm banner mới",
+    "description": "Thêm một banner mới (upload ảnh)",
+    "consumes": ["multipart/form-data"],
+    "parameters": [
+      {
+        "name": "image",
+        "in": "formData",
+        "type": "file",
+        "required": true,
+        "description": "Ảnh banner"
+      },
+      {
+        "name": "title",
+        "in": "formData",
+        "type": "string",
+        "required": true,
+        "description": "Tiêu đề banner"
+      },
+      {
+        "name": "link",
+        "in": "formData",
+        "type": "string",
+        "description": "Link khi click vào banner"
+      },
+      {
+        "name": "description",
+        "in": "formData",
+        "type": "string",
+        "description": "Mô tả banner"
+      },
+      {
+        "name": "isActive",
+        "in": "formData",
+        "type": "boolean",
+        "description": "Banner có hiển thị không"
+      }
+    ],
+    "responses": {
+      "201": {
+        "description": "Thêm banner thành công",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string", "example": "Thêm banner thành công" },
+            "data": {
+              "type": "object",
+              "properties": {
+                "_id": { "type": "string", "example": "6658c2e1b1a2c3d4e5f6a7b8" },
+                "title": { "type": "string", "example": "Banner Sale" },
+                "image": { "type": "string", "example": "/uploads/banner1.jpg" },
+                "link": { "type": "string", "example": "https://example.com" },
+                "description": { "type": "string", "example": "Banner giảm giá lớn" },
+                "isActive": { "type": "boolean", "example": true }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Lỗi dữ liệu",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "error": { "type": "string", "example": "Tiêu đề banner không được để trống" }
+          }
+        }
+      }
+    }
+  }
+},
+"/banners/{id}": {
+  "patch": {
+    "tags": ["Banner"],
+    "summary": "Cập nhật banner",
+    "description": "Cập nhật thông tin banner (có thể upload lại ảnh)",
+    "consumes": ["multipart/form-data"],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "type": "string",
+        "description": "ID của banner"
+      },
+      {
+        "name": "image",
+        "in": "formData",
+        "type": "file",
+        "description": "Ảnh banner mới"
+      },
+      {
+        "name": "title",
+        "in": "formData",
+        "type": "string",
+        "description": "Tiêu đề banner"
+      },
+      {
+        "name": "link",
+        "in": "formData",
+        "type": "string",
+        "description": "Link khi click vào banner"
+      },
+      {
+        "name": "description",
+        "in": "formData",
+        "type": "string",
+        "description": "Mô tả banner"
+      },
+      {
+        "name": "isActive",
+        "in": "formData",
+        "type": "boolean",
+        "description": "Banner có hiển thị không"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Cập nhật banner thành công",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string", "example": "Cập nhật banner thành công" },
+            "data": {
+              "type": "object",
+              "properties": {
+                "_id": { "type": "string", "example": "6658c2e1b1a2c3d4e5f6a7b8" },
+                "title": { "type": "string", "example": "Banner Sale" },
+                "image": { "type": "string", "example": "/uploads/banner1.jpg" },
+                "link": { "type": "string", "example": "https://example.com" },
+                "description": { "type": "string", "example": "Banner giảm giá lớn" },
+                "isActive": { "type": "boolean", "example": true }
+              }
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "Không tìm thấy banner",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "error": { "type": "string", "example": "Không tìm thấy banner" }
+          }
+        }
+      }
+    }
+  },
+  "delete": {
+    "tags": ["Banner"],
+    "summary": "Xóa vĩnh viễn banner",
+    "description": "Xóa banner khỏi hệ thống",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "type": "string",
+        "description": "ID của banner"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Xóa banner thành công",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string", "example": "Xóa banner thành công" }
+          }
+        }
+      },
+      "404": {
+        "description": "Không tìm thấy banner",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "error": { "type": "string", "example": "Không tìm thấy banner" }
+          }
+        }
+      }
+    }
+  }
+},
+"/banners/soft-delete/{id}": {
+  "delete": {
+    "tags": ["Banner"],
+    "summary": "Xóa mềm banner",
+    "description": "Đánh dấu banner là đã xóa (isActive=false)",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "type": "string",
+        "description": "ID của banner"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Xóa mềm banner thành công",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string", "example": "Xóa mềm banner thành công" }
+          }
+        }
+      },
+      "404": {
+        "description": "Không tìm thấy banner",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "error": { "type": "string", "example": "Không tìm thấy banner" }
+          }
+        }
+      }
+    }
+  }
+},
+"/banners/restore/{id}": {
+  "patch": {
+    "tags": ["Banner"],
+    "summary": "Khôi phục banner đã xóa mềm",
+    "description": "Khôi phục trạng thái hiển thị của banner (isActive=true)",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "type": "string",
+        "description": "ID của banner"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Khôi phục banner thành công",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string", "example": "Khôi phục banner thành công" }
+          }
+        }
+      },
+      "404": {
+        "description": "Không tìm thấy banner",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "error": { "type": "string", "example": "Không tìm thấy banner" }
+          }
+        }
+      }
+    }
+  }
+}
+
 	},
 	"securityDefinitions": {
 		"BearerAuth": {
