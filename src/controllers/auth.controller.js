@@ -294,7 +294,8 @@ const authController = {
           message: "Đăng nhập thành công",
           data: {
             account: accountResponse,
-            accessToken
+            accessToken,
+            refreshToken
           },
           statusCode: 200
         });
