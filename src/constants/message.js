@@ -49,3 +49,20 @@ export const CART_MESSAGES = {
   ITEM_NOT_FOUND_TO_REMOVE: "Không tìm thấy sản phẩm hoặc biến thể trong giỏ hàng để xóa",
   INVALID_INPUT: "Dữ liệu không hợp lệ"
 };
+export const CONTACT_MESSAGES = {
+  CREATE_SUCCESS: "Thêm liên hệ thành công",
+  GET_LIST_SUCCESS: "Lấy danh sách liên hệ thành công",
+  DELETE_SUCCESS: "Xóa liên hệ thành công",
+  NOT_FOUND: "Không tìm thấy liên hệ",
+  SERVER_ERROR: "Lỗi server"
+};
+export const BANNER_MESSAGES = {
+  CREATE_SUCCESS: "Thêm banner thành công",
+  GET_LIST_SUCCESS: "Lấy danh sách banner thành công",
+  UPDATE_SUCCESS: "Cập nhật banner thành công",
+  SOFT_DELETE_SUCCESS: "Xóa mềm banner thành công",
+  RESTORE_SUCCESS: "Khôi phục banner thành công",
+  DELETE_SUCCESS: "Xóa banner thành công",
+  NOT_FOUND: "Không tìm thấy banner",
+  SERVER_ERROR: "Lỗi server"
+};
