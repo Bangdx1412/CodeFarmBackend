@@ -66,3 +66,20 @@ export const BANNER_MESSAGES = {
   NOT_FOUND: "Không tìm thấy banner",
   SERVER_ERROR: "Lỗi server"
 };
+
+export const SHIPPING_METHOD_MESSAGES = {
+  GET_LIST_SUCCESS: "Lấy danh sách phương thức vận chuyển thành công",
+  GET_BY_ID_SUCCESS: "Lấy thông tin phương thức vận chuyển thành công",
+  CREATE_SUCCESS: "Tạo phương thức vận chuyển thành công",
+  UPDATE_SUCCESS: "Cập nhật phương thức vận chuyển thành công",
+  DELETE_SUCCESS: "Xóa phương thức vận chuyển thành công",
+  NOT_FOUND: "Không tìm thấy phương thức vận chuyển",
+  NAME_REQUIRED: "Tên phương thức vận chuyển không được để trống",
+  CARRIER_REQUIRED: "Tên đơn vị vận chuyển không được để trống",
+  FEE_REQUIRED: "Phí vận chuyển không được để trống",
+  FEE_INVALID: "Phí vận chuyển phải lớn hơn hoặc bằng 0",
+  ESTIMATED_DAYS_REQUIRED: "Số ngày ước tính không được để trống",
+  ESTIMATED_DAYS_INVALID: "Số ngày ước tính phải lớn hơn hoặc bằng 0",
+  STATUS_INVALID: "Trạng thái phải là active hoặc inactive",
+  SERVER_ERROR: "Lỗi server"
+};
