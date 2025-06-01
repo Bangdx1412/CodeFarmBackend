@@ -21,15 +21,20 @@ import {
   idSchema
 } from "../validations/product.validation.js";
 import { z } from "zod";
+import checkPermission from "../middlewares/checkPermission.js";
 
 const upload = multer();
 const router = express.Router();
 
+// Public routes
 router.get("/", validateQuery(productQuerySchema), getProducts);
 router.get("/categories", getProductCategories);
 router.get("/:id", validateParams(z.object({ id: idSchema })), getProductById);
 
+// Admin only routes
 router.post("/",
+  checkPermission.verifyToken,
+  checkPermission.isAdmin,
   upload.array("thumbnails"),
   uploadMultipleCloud,
   validateRequest(createProductSchema),
@@ -37,12 +42,16 @@ router.post("/",
 );
 
 router.post("/:id/variants",
+  checkPermission.verifyToken,
+  checkPermission.isAdmin,
   validateParams(z.object({ id: idSchema })),
   validateRequest(addVariantsSchema),
   addProductVariant
 );
 
 router.put("/:id",
+  checkPermission.verifyToken,
+  checkPermission.isAdmin,
   validateParams(z.object({ id: idSchema })),
   upload.array("thumbnails"),
   uploadMultipleCloud,
@@ -51,16 +60,22 @@ router.put("/:id",
 );
 
 router.delete("/soft-delete/:id",
+  checkPermission.verifyToken,
+  checkPermission.isAdmin,
   validateParams(z.object({ id: idSchema })),
   softDeleteProduct
 );
 
 router.delete("/:id",
+  checkPermission.verifyToken,
+  checkPermission.isAdmin,
   validateParams(z.object({ id: idSchema })),
   deleteProduct
 );
 
 router.patch("/restore/:id",
+  checkPermission.verifyToken,
+  checkPermission.isAdmin,
   validateParams(z.object({ id: idSchema })),
   restoreProduct
 );
