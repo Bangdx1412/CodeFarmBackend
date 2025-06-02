@@ -12,11 +12,24 @@ routeUser.get("/profile",
     userController.getProfile
 );
 
+// Đổi mật khẩu khi đã đăng nhập
+routeUser.post("/change-password", 
+    checkPermission.verifyToken,
+    userController.changePassword
+);
+
 routeUser.post("/update-info-user", 
     checkPermission.verifyToken,
     upload.single("avatar"),
     uploadCloud,
     userController.updateUser
 );
+
+routeUser.get("/getUsers",
+    checkPermission.verifyToken,
+    checkPermission.isAdmin,
+    userController.getUsers
+);
+
 
 export default routeUser;
