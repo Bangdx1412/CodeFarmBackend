@@ -31,5 +31,11 @@ routeUser.get("/getUsers",
     userController.getUsers
 );
 
+// Xóa mềm tài khoản (chỉ admin mới có quyền)
+routeUser.delete("/:id",
+    checkPermission.verifyToken,
+    checkPermission.isAdmin,
+    userController.softDeleteUser
+);
 
 export default routeUser;

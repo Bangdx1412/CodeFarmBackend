@@ -94,5 +94,10 @@ export const USER_MESSAGES = {
   NO_DATA_TO_UPDATE: "Không có dữ liệu để cập nhật",
   OLD_PASSWORD_INCORRECT: "Mật khẩu cũ không chính xác",
   NEW_PASSWORD_SAME_AS_OLD: "Mật khẩu mới không được trùng với mật khẩu cũ",
-  SERVER_ERROR: "Lỗi server"
+  SERVER_ERROR: "Lỗi server",
+  SOFT_DELETE_SUCCESS: "Xóa tài khoản thành công",
+  ALREADY_DELETED: "Tài khoản đã bị xóa trước đó",
+  UNAUTHORIZED: "Bạn không có quyền thực hiện thao tác này",
+  CANNOT_DELETE_SELF: "Không thể xóa tài khoản của chính mình",
+  INVALID_ID: "ID không hợp lệ"
 };
