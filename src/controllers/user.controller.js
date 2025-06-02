@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { updateUserSchema, changePasswordSchema } from "../validations/user.validation.js";
 import { USER_MESSAGES } from "../constants/message.js";
 import RefreshToken from "../models/RefreshToken.model.js";
+import mongoose from "mongoose";
 
 const userController = {
   getProfile: async (req, res) => {
@@ -194,6 +195,58 @@ const userController = {
       });
     } catch (error) {
       console.error("Lỗi đổi mật khẩu:", error);
+      return res.status(500).json({
+        status: false,
+        message: USER_MESSAGES.SERVER_ERROR,
+        statusCode: 500
+      });
+    }
+  },
+
+  softDeleteUser: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const currentUserId = req.user.id;
+
+      // Check if ID is valid
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+          status: false,
+          message: USER_MESSAGES.INVALID_ID,
+          statusCode: 400
+        });
+      }
+
+      // Prevent self-deletion
+      if (id === currentUserId.toString()) {
+        return res.status(400).json({
+          status: false,
+          message: USER_MESSAGES.CANNOT_DELETE_SELF,
+          statusCode: 400
+        });
+      }
+
+      const user = await Account.findOneAndUpdate(
+        { _id: id, deleted: false },
+        { deleted: true, deletedAt: new Date() },
+        { new: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          status: false,
+          message: USER_MESSAGES.NOT_FOUND,
+          statusCode: 404
+        });
+      }
+
+      return res.status(200).json({
+        status: true,
+        message: USER_MESSAGES.SOFT_DELETE_SUCCESS,
+        statusCode: 200
+      });
+    } catch (error) {
+      console.error("Lỗi xóa tài khoản:", error);
       return res.status(500).json({
         status: false,
         message: USER_MESSAGES.SERVER_ERROR,
