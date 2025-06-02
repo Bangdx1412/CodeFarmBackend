@@ -1465,103 +1465,7 @@
 				}
 			}
 		},
-		"/user/profile": {
-			"get": {
-				"tags": ["User"],
-				"summary": "Lấy thông tin profile",
-				"description": "Lấy thông tin profile của người dùng đang đăng nhập",
-				"security": [
-					{
-						"BearerAuth": []
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "Lấy thông tin thành công",
-						"schema": {
-							"type": "object",
-							"properties": {
-								"status": {
-									"type": "boolean",
-									"example": true
-								},
-								"message": {
-									"type": "string",
-									"example": "Lấy thông tin thành công"
-								},
-								"data": {
-									"type": "object",
-									"properties": {
-										"_id": {
-											"type": "string",
-											"example": "65f2e8b7c261e6001234abcd"
-										},
-										"email": {
-											"type": "string",
-											"example": "user@example.com"
-										},
-										"fullName": {
-											"type": "string",
-											"example": "Nguyễn Văn A"
-										},
-										"phone": {
-											"type": "string",
-											"example": "0123456789"
-										},
-										"avatar": {
-											"type": "string",
-											"example": "https://res.cloudinary.com/..."
-										},
-										"gender": {
-											"type": "string",
-											"enum": ["male", "female", "other"],
-											"example": "male"
-										},
-										"birthday": {
-											"type": "string",
-											"format": "date",
-											"example": "1990-01-01"
-										},
-										"address": {
-											"type": "string",
-											"example": "Hà Nội"
-										},
-										"status": {
-											"type": "string",
-											"example": "active"
-										}
-									}
-								},
-								"statusCode": {
-									"type": "number",
-									"example": 200
-								}
-							}
-						}
-					},
-					"404": {
-						"description": "Không tìm thấy thông tin người dùng",
-						"schema": {
-							"type": "object",
-							"properties": {
-								"status": {
-									"type": "boolean",
-									"example": false
-								},
-								"message": {
-									"type": "string",
-									"example": "Không tìm thấy thông tin người dùng"
-								},
-								"statusCode": {
-									"type": "number",
-									"example": 404
-								}
-							}
-						}
-					}
-				}
-			}
-		},
+		
 		"/wishlist": {
 			"post": {
 				"summary": "Thêm sản phẩm vào wishlist",
@@ -1633,153 +1537,7 @@
 				}
 			}
 		},
-		"/user/update-info-user": {
-			"post": {
-				"tags": ["User"],
-				"summary": "Cập nhật thông tin profile",
-				"description": "Cập nhật thông tin profile của người dùng đang đăng nhập",
-				"security": [
-					{
-						"BearerAuth": []
-					}
-				],
-				"consumes": [
-					"multipart/form-data"
-				],
-				"parameters": [
-					{
-						"name": "avatar",
-						"in": "formData",
-						"type": "file",
-						"description": "Ảnh đại diện (tối đa 5MB, định dạng: jpg, png, gif, webp)"
-					},
-					{
-						"name": "fullName",
-						"in": "formData",
-						"type": "string",
-						"description": "Họ và tên"
-					},
-					{
-						"name": "phone",
-						"in": "formData",
-						"type": "string",
-						"description": "Số điện thoại (bắt đầu bằng số 0, 10 chữ số)"
-					},
-					{
-						"name": "gender",
-						"in": "formData",
-						"type": "string",
-						"enum": ["male", "female", "other"],
-						"description": "Giới tính"
-					},
-					{
-						"name": "birthday",
-						"in": "formData",
-						"type": "string",
-						"format": "date",
-						"description": "Ngày sinh (không được lớn hơn ngày hiện tại)"
-					},
-					{
-						"name": "address",
-						"in": "formData",
-						"type": "string",
-						"description": "Địa chỉ"
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "Cập nhật thành công",
-						"schema": {
-							"type": "object",
-							"properties": {
-								"status": {
-									"type": "boolean",
-									"example": true
-								},
-								"message": {
-									"type": "string",
-									"example": "Cập nhật thành công"
-								},
-								"data": {
-									"type": "object",
-									"properties": {
-										"_id": {
-											"type": "string",
-											"example": "65f2e8b7c261e6001234abcd"
-										},
-										"email": {
-											"type": "string",
-											"example": "user@example.com"
-										},
-										"fullName": {
-											"type": "string",
-											"example": "Nguyễn Văn A"
-										},
-										"phone": {
-											"type": "string",
-											"example": "0123456789"
-										},
-										"avatar": {
-											"type": "string",
-											"example": "https://res.cloudinary.com/..."
-										},
-										"gender": {
-											"type": "string",
-											"enum": ["male", "female", "other"],
-											"example": "male"
-										},
-										"birthday": {
-											"type": "string",
-											"format": "date",
-											"example": "1990-01-01"
-										},
-										"address": {
-											"type": "string",
-											"example": "Hà Nội"
-										},
-										"status": {
-											"type": "string",
-											"example": "active"
-										}
-									}
-								},
-								"statusCode": {
-									"type": "number",
-									"example": 200
-								}
-							}
-						}
-					},
-					"400": {
-						"description": "Lỗi dữ liệu",
-						"schema": {
-							"type": "object",
-							"properties": {
-								"status": {
-									"type": "boolean",
-									"example": false
-								},
-								"message": {
-									"type": "string",
-									"example": "Dữ liệu không hợp lệ"
-								},
-								"errors": {
-									"type": "array",
-									"items": {
-										"type": "string"
-									},
-									"example": ["Số điện thoại phải bắt đầu bằng số 0 và có 10 chữ số"]
-								},
-								"statusCode": {
-									"type": "number",
-									"example": 400
-								}
-							}
-						}
-					}
-				}
-			}
-		},
+		
 		"/coupon": {
 			"post": {
 				"tags": ["Coupon"],
@@ -3580,16 +3338,946 @@
       }
     }
   }
-}
+},
+"/shipping-methods": {
+			"get": {
+				"tags": ["Shipping Methods"],
+				"summary": "Lấy danh sách phương thức vận chuyển",
+				"description": "Lấy danh sách các phương thức vận chuyển đang hoạt động",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Lấy danh sách thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Lấy danh sách phương thức vận chuyển thành công"
+								},
+								"data": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"_id": {
+												"type": "string",
+												"example": "65f2e8b7c261e6001234abcd"
+											},
+											"name": {
+												"type": "string",
+												"example": "Express Delivery"
+											},
+											"carrier": {
+												"type": "string",
+												"example": "FastShip"
+											},
+											"fee": {
+												"type": "number",
+												"example": 50000
+											},
+											"estimated_days": {
+												"type": "number",
+												"example": 2
+											},
+											"status": {
+												"type": "string",
+												"enum": ["active", "inactive"],
+												"example": "active"
+											}
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": ["Shipping Methods"],
+				"summary": "Tạo phương thức vận chuyển mới",
+				"description": "Tạo một phương thức vận chuyển mới (yêu cầu quyền admin)",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"type": "object",
+							"required": ["name", "carrier", "fee", "estimated_days", "status"],
+							"properties": {
+								"name": {
+									"type": "string",
+									"example": "Express Delivery"
+								},
+								"carrier": {
+									"type": "string",
+									"example": "FastShip"
+								},
+								"fee": {
+									"type": "number",
+									"example": 50000
+								},
+								"estimated_days": {
+									"type": "number",
+									"example": 2
+								},
+								"status": {
+									"type": "string",
+									"enum": ["active", "inactive"],
+									"example": "active"
+								}
+							}
+						}
+					}
+				],
+				"responses": {
+					"201": {
+						"description": "Tạo phương thức vận chuyển thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Tạo phương thức vận chuyển thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"name": {
+											"type": "string",
+											"example": "Express Delivery"
+										},
+										"carrier": {
+											"type": "string",
+											"example": "FastShip"
+										},
+										"fee": {
+											"type": "number",
+											"example": 50000
+										},
+										"estimated_days": {
+											"type": "number",
+											"example": 2
+										},
+										"status": {
+											"type": "string",
+											"example": "active"
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 201
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Lỗi dữ liệu",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Tên phương thức vận chuyển không được để trống"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 400
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Không có quyền truy cập",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Không có quyền truy cập"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 403
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/shipping-methods/{id}": {
+			"get": {
+				"tags": ["Shipping Methods"],
+				"summary": "Lấy thông tin phương thức vận chuyển",
+				"description": "Lấy thông tin chi tiết của một phương thức vận chuyển",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"type": "string",
+						"description": "ID của phương thức vận chuyển"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Lấy thông tin thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Lấy thông tin phương thức vận chuyển thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"name": {
+											"type": "string",
+											"example": "Express Delivery"
+										},
+										"carrier": {
+											"type": "string",
+											"example": "FastShip"
+										},
+										"fee": {
+											"type": "number",
+											"example": 50000
+										},
+										"estimated_days": {
+											"type": "number",
+											"example": 2
+										},
+										"status": {
+											"type": "string",
+											"example": "active"
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Không tìm thấy phương thức vận chuyển",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Không tìm thấy phương thức vận chuyển"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"tags": ["Shipping Methods"],
+				"summary": "Cập nhật phương thức vận chuyển",
+				"description": "Cập nhật thông tin của một phương thức vận chuyển (yêu cầu quyền admin)",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"type": "string",
+						"description": "ID của phương thức vận chuyển"
+					},
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"type": "object",
+							"properties": {
+								"name": {
+									"type": "string",
+									"example": "Express Delivery Updated"
+								},
+								"carrier": {
+									"type": "string",
+									"example": "FastShip"
+								},
+								"fee": {
+									"type": "number",
+									"example": 75000
+								},
+								"estimated_days": {
+									"type": "number",
+									"example": 1
+								},
+								"status": {
+									"type": "string",
+									"enum": ["active", "inactive"],
+									"example": "active"
+								}
+							}
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Cập nhật thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Cập nhật phương thức vận chuyển thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"name": {
+											"type": "string",
+											"example": "Express Delivery Updated"
+										},
+										"carrier": {
+											"type": "string",
+											"example": "FastShip"
+										},
+										"fee": {
+											"type": "number",
+											"example": 75000
+										},
+										"estimated_days": {
+											"type": "number",
+											"example": 1
+										},
+										"status": {
+											"type": "string",
+											"example": "active"
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Không có quyền truy cập",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Không có quyền truy cập"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 403
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Không tìm thấy phương thức vận chuyển",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Không tìm thấy phương thức vận chuyển"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": ["Shipping Methods"],
+				"summary": "Xóa phương thức vận chuyển",
+				"description": "Xóa một phương thức vận chuyển (yêu cầu quyền admin)",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"type": "string",
+						"description": "ID của phương thức vận chuyển"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Xóa thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Xóa phương thức vận chuyển thành công"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Không có quyền truy cập",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Không có quyền truy cập"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 403
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Không tìm thấy phương thức vận chuyển",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Không tìm thấy phương thức vận chuyển"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/profile": {
+			"get": {
+				"tags": ["User"],
+				"summary": "Lấy thông tin profile",
+				"description": "Lấy thông tin profile của người dùng đang đăng nhập",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Lấy thông tin thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Lấy thông tin thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"email": {
+											"type": "string",
+											"example": "user@example.com"
+										},
+										"fullName": {
+											"type": "string",
+											"example": "Nguyễn Văn A"
+										},
+										"phone": {
+											"type": "string",
+											"example": "0123456789"
+										},
+										"avatar": {
+											"type": "string",
+											"example": "https://example.com/avatar.jpg"
+										},
+										"gender": {
+											"type": "string",
+											"enum": ["male", "female", "other"],
+											"example": "male"
+										},
+										"birthday": {
+											"type": "string",
+											"format": "date",
+											"example": "1990-01-01"
+										},
+										"address": {
+											"type": "string",
+											"example": "Hà Nội"
+										},
+										"status": {
+											"type": "string",
+											"example": "active"
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Không tìm thấy thông tin người dùng",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Không tìm thấy thông tin người dùng"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/update-info-user": {
+			"post": {
+				"tags": ["User"],
+				"summary": "Cập nhật thông tin profile",
+				"description": "Cập nhật thông tin profile của người dùng đang đăng nhập",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"consumes": [
+					"multipart/form-data"
+				],
+				"parameters": [
+					{
+						"name": "avatar",
+						"in": "formData",
+						"type": "file",
+						"description": "Ảnh đại diện (tối đa 5MB, định dạng: jpg, png, gif, webp)"
+					},
+					{
+						"name": "fullName",
+						"in": "formData",
+						"type": "string",
+						"description": "Họ và tên"
+					},
+					{
+						"name": "phone",
+						"in": "formData",
+						"type": "string",
+						"description": "Số điện thoại (bắt đầu bằng số 0, 10 chữ số)"
+					},
+					{
+						"name": "gender",
+						"in": "formData",
+						"type": "string",
+						"enum": ["male", "female", "other"],
+						"description": "Giới tính"
+					},
+					{
+						"name": "birthday",
+						"in": "formData",
+						"type": "string",
+						"format": "date",
+						"description": "Ngày sinh (không được lớn hơn ngày hiện tại)"
+					},
+					{
+						"name": "address",
+						"in": "formData",
+						"type": "string",
+						"description": "Địa chỉ"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Cập nhật thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Cập nhật thành công"
+								},
+								"data": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"example": "65f2e8b7c261e6001234abcd"
+										},
+										"email": {
+											"type": "string",
+											"example": "user@example.com"
+										},
+										"fullName": {
+											"type": "string",
+											"example": "Nguyễn Văn A"
+										},
+										"phone": {
+											"type": "string",
+											"example": "0123456789"
+										},
+										"avatar": {
+											"type": "string",
+											"example": "https://example.com/avatar.jpg"
+										},
+										"gender": {
+											"type": "string",
+											"enum": ["male", "female", "other"],
+											"example": "male"
+										},
+										"birthday": {
+											"type": "string",
+											"format": "date",
+											"example": "1990-01-01"
+										},
+										"address": {
+											"type": "string",
+											"example": "Hà Nội"
+										},
+										"status": {
+											"type": "string",
+											"example": "active"
+										}
+									}
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Lỗi dữ liệu",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Dữ liệu không hợp lệ"
+								},
+								"errors": {
+									"type": "array",
+									"items": {
+										"type": "string"
+									},
+									"example": ["Số điện thoại phải bắt đầu bằng số 0 và có 10 chữ số"]
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 400
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/change-password": {
+			"post": {
+				"tags": ["User"],
+				"summary": "Đổi mật khẩu",
+				"description": "Đổi mật khẩu của người dùng đang đăng nhập",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"type": "object",
+							"required": ["oldPassword", "newPassword"],
+							"properties": {
+								"oldPassword": {
+									"type": "string",
+									"example": "oldpass123"
+								},
+								"newPassword": {
+									"type": "string",
+									"example": "newpass123"
+								}
+							}
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Đổi mật khẩu thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Đổi mật khẩu thành công. Vui lòng đăng nhập lại."
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Lỗi dữ liệu",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Mật khẩu cũ không chính xác"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 400
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/soft-delete/{id}": {
+			"delete": {
+				"tags": ["User"],
+				"summary": "Xóa mềm tài khoản",
+				"description": "Đánh dấu tài khoản là đã xóa (chỉ admin mới có quyền)",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"type": "string",
+						"description": "ID của tài khoản cần xóa"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Xóa tài khoản thành công",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": true
+								},
+								"message": {
+									"type": "string",
+									"example": "Xóa tài khoản thành công"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 200
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Lỗi dữ liệu",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Không thể xóa tài khoản của chính mình"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 400
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Không có quyền truy cập",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Bạn không có quyền thực hiện thao tác này"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 403
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Không tìm thấy tài khoản",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"status": {
+									"type": "boolean",
+									"example": false
+								},
+								"message": {
+									"type": "string",
+									"example": "Không tìm thấy tài khoản"
+								},
+								"statusCode": {
+									"type": "number",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			}
+		}}
 
-	},
-	"securityDefinitions": {
-		"BearerAuth": {
-			"type": "apiKey",
-			"name": "Authorization",
-			"in": "header",
-			"description": "JWT token. Example: 'Bearer {token}'"
-		}
-	}
+	
 }
 
