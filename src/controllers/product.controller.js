@@ -4,24 +4,57 @@ import { sendSuccess } from "../middlewares/success.middleware.js";
 import { PRODUCT_MESSAGES } from "../constants/message.js";
 import tree from "../helpers/createTree.js";
 import cloudinary from "../configs/cloudinary.js";
+import searchHelper from "../helpers/search.js";
+import handlePagination from "../helpers/pagination.js";
 
 
-// Lấy danh sách sản phẩm (có tìm kiếm, phân trang, sort)
 export const getProducts = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, search = "", includeDeleted = false, sortBy = "createdAt", order = "desc" } = req.query;
+    let find = {
+      deleted: false,
+    };
 
-    const filter = includeDeleted ? {} : { deleted: false };
-    if (search) {
-      filter.title = { $regex: search, $options: "i" };
+    if (req.query.status) {
+      find.status = req.query.status;
+    }    // Lọc theo danh mục nếu có
+    if (req.query.category) {
+      find.product_category_id = req.query.category;
+    }
+
+    const objectSearch = searchHelper(req.query);
+    if (objectSearch.regex) {
+      find.title = objectSearch.regex;
+    }
+
+    const totalItems = await Product.countDocuments(find);
+
+    let limit = parseInt(req.query.limit);
+    if (isNaN(limit) || limit < 1) {
+      limit = 10;
+    }
+    limit = Math.min(limit, 50);
+    const totalPages = Math.ceil(totalItems / limit) || 1;
+
+    let page = parseInt(req.query.page);
+    if (isNaN(page) || page < 1 || page > totalPages) {
+      page = 1; 
     }
 
     const skip = (page - 1) * limit;
-    const total = await Product.countDocuments(filter);
-    const products = await Product.find(filter)
-      .sort({ [sortBy]: order === "asc" ? 1 : -1 })
-      .skip(skip)
+
+    let sort = {};
+    if (req.query.sort) {
+      const [sortKey, sortValue] = req.query.sort.split(':');
+      if (sortKey && sortValue) {
+        sort[sortKey] = sortValue === 'desc' ? -1 : 1;
+      }
+    } else {
+      sort = { position: -1 }; 
+    }
+    const products = await Product.find(find)
+      .sort(sort)
       .limit(limit)
+      .skip(skip)
       .populate({
         path: "product_category_id",
         select: "title parent_id description thumbnails status position slug",
@@ -30,8 +63,6 @@ export const getProducts = async (req, res, next) => {
           select: "title description thumbnails status position slug"
         }
       });
-
-    // Format products with category information and discounted price
     const formattedProducts = products.map(product => {
       const category = product.product_category_id;
       const discountedPrice = product.getDiscountedPrice();
@@ -57,20 +88,19 @@ export const getProducts = async (req, res, next) => {
         }
       };
     });
+    return res.status(200).json({
+      status: true,
+      message: PRODUCT_MESSAGES.GET_LIST_SUCCESS,
+      data: formattedProducts,
+      pagination: {
+        currentPage: page, 
+        limit,  
+        totalPages, 
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1  
+      }
+    });
 
-    sendSuccess(
-      res,
-      {
-        products: formattedProducts,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
-      },
-      PRODUCT_MESSAGES.GET_LIST_SUCCESS
-    );
   } catch (error) {
     next(error);
   }
