@@ -6,7 +6,7 @@ const orderSchema = new Schema(
   {
     user_id: {
       type: Types.ObjectId,
-      ref: "User",
+      ref: "accounts",
       required: true,
     },
 
@@ -37,15 +37,14 @@ const orderSchema = new Schema(
           ref: "Product",
           required: true,
         },
-        productVariantId: {
-          type: Types.ObjectId,
-          ref: "ProductVariant",
-          required: true,
-        },
         productName: { type: String, required: true },
         imageUrl: { type: String },
+        variant: {
+          size: { type: String, required: true },
+        },
         quantity: { type: Number, required: true, min: 1 },
-        unitPrice: { type: Number, required: true, min: 0 },
+        unitPrice: { type: Number, required: true, min: 0 },       // Giá gốc
+        discountedPrice: { type: Number, required: true, min: 0 }, // Giá đã giảm
       },
     ],
 
@@ -54,10 +53,10 @@ const orderSchema = new Schema(
       discount_amount: { type: Number, min: 0 },
     },
 
-    subtotal: { type: Number, required: true, min: 0 }, // Tổng sản phẩm
-    shipping_fee: { type: Number, required: true, min: 0 },
-    discount: { type: Number, default: 0, min: 0 },
-    final_price: { type: Number, required: true, min: 0 },
+    subtotal: { type: Number, required: true, min: 0 },     // Tổng tiền sản phẩm chưa tính ship/giảm giá
+    shipping_fee: { type: Number, required: true, min: 0 }, // Phí vận chuyển
+    discount: { type: Number, default: 0, min: 0 },         // Tổng giảm giá
+    final_price: { type: Number, required: true, min: 0 },  // Tổng tiền phải trả
 
     status: {
       type: String,
@@ -67,6 +66,13 @@ const orderSchema = new Schema(
 
     note: { type: String },
     trackingNumber: { type: String },
+
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
+    },
+    paymentTime: { type: Date },
   },
   { timestamps: true, versionKey: false }
 );
