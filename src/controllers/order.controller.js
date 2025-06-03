@@ -246,4 +246,78 @@ export const getOrderById = async (req, res) => {
       statusCode: 500
     });
   }
-}; 
+};
+
+export const getOrdersAdmin = async (req, res) => {
+  try {
+    const orders = await Order.find({})
+      .populate({
+        path: 'user_id',
+        select: 'fullName email phone',
+        model: 'Account'
+      })
+      .sort({ createdAt: -1 });
+
+    const formattedOrders = orders.map(order => ({
+      _id: order._id,
+      orderNumber: `OD-${order._id.toString().slice(-6).toUpperCase()}`,
+      user: {
+        fullName: order.user_id?.fullName || 'N/A',
+        email: order.user_id?.email || 'N/A',
+        phone: order.user_id?.phone || 'N/A'
+      },
+      shippingInfo: {
+        fullName: order.shippingAddress.fullName,
+        phone: order.shippingAddress.phone,
+        address: `${order.shippingAddress.addressLine}, ${order.shippingAddress.ward}, ${order.shippingAddress.district}, ${order.shippingAddress.province}`
+      },
+      orderItems: order.orderItems.map(item => ({
+        productName: item.productName,
+        imageUrl: item.imageUrl,
+        variant: item.variant,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        discountedPrice: item.discountedPrice || item.unitPrice,
+        total: (item.discountedPrice || item.unitPrice) * item.quantity
+      })),
+      payment: {
+        method: order.payment_method,
+        status: order.paymentStatus,
+        paymentTime: order.paymentTime
+      },
+      shipping: {
+        method: order.shippingMethod?.name || 'N/A',
+        fee: order.shippingMethod?.fee || 0,
+        trackingNumber: order.trackingNumber || 'N/A'
+      },
+      pricing: {
+        subtotal: order.subtotal,
+        shippingFee: order.shipping_fee,
+        discount: order.discount,
+        finalPrice: order.final_price
+      },
+      status: order.status,
+      note: order.note || 'N/A',
+      coupon: order.coupon?.code ? {
+        code: order.coupon.code,
+        discountAmount: order.coupon.discount_amount
+      } : null,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt
+    }));
+
+    return res.status(200).json({
+      status: true,
+      message: ORDER_MESSAGES.GET_LIST_SUCCESS,
+      data: formattedOrders,
+      statusCode: 200
+    });
+  } catch (error) {
+    console.error("Error getting orders:", error);
+    return res.status(500).json({
+      status: false,
+      message: ORDER_MESSAGES.SERVER_ERROR,
+      statusCode: 500
+    });
+  }
+};

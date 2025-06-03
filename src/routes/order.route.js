@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createOrder, getOrders, getOrderById } from "../controllers/order.controller.js";
+import { createOrder, getOrders, getOrderById, getOrdersAdmin } from "../controllers/order.controller.js";
 import checkPermission from "../middlewares/checkPermission.js";
 
 const router = Router();
@@ -10,7 +10,9 @@ router.post("/", checkPermission.verifyToken, createOrder);
 // Get all orders for a user
 router.get("/", checkPermission.verifyToken, getOrders);
 
-// Get order by ID
+// Quản lý đơn hàng - Admin routes
+router.get("/get-all-order", checkPermission.verifyToken, checkPermission.isAdmin, getOrdersAdmin);
+
 router.get("/:id", checkPermission.verifyToken, getOrderById);
 
 export default router; 
