@@ -9,6 +9,8 @@ import cartRoute from "./cart.route.js";
 import Contact from "./contact.route.js";
 import bannerRoute from "./banner.route.js";
 import shippingMethodRoute from "./shippingMethod.route.js";
+import orderRoute from "./order.route.js";
+
 const routes = Router();
 
 routes.use("/products", productRoute)
@@ -22,6 +24,7 @@ routes.use("/cart", cartRoute);
 routes.use("/contact", Contact);
 routes.use("/banners", bannerRoute);
 routes.use("/shipping-methods", shippingMethodRoute);
+routes.use("/orders", orderRoute);
 // routes.use("/products", hanldeProduct...)
 // routes.use("/products", hanldeProduct...)
 // routes.use("/products", hanldeProduct...)
