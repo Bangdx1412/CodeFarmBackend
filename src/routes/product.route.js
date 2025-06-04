@@ -17,7 +17,6 @@ import {
   createProductSchema,
   updateProductSchema,
   addVariantsSchema,
-  productQuerySchema,
   idSchema
 } from "../validations/product.validation.js";
 import { z } from "zod";
@@ -27,7 +26,7 @@ const upload = multer();
 const router = express.Router();
 
 // Public routes
-router.get("/", validateQuery(productQuerySchema), getProducts);
+router.get("/", getProducts);
 router.get("/categories", getProductCategories);
 router.get("/:id", validateParams(z.object({ id: idSchema })), getProductById);
 

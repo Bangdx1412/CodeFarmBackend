@@ -51,6 +51,7 @@ export const getProducts = async (req, res, next) => {
     } else {
       sort = { position: -1 }; 
     }
+    
     const products = await Product.find(find)
       .sort(sort)
       .limit(limit)
