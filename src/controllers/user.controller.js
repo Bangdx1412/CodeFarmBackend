@@ -9,7 +9,9 @@ import mongoose from "mongoose";
 const userController = {
   getProfile: async (req, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user._id;
+      console.log(userId);
+      
       const user = await Account.findOne(
         { _id: userId, deleted: false },
         { password: 0, token: 0 }
