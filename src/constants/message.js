@@ -64,5 +64,6 @@ export const BANNER_MESSAGES = {
   RESTORE_SUCCESS: "Khôi phục banner thành công",
   DELETE_SUCCESS: "Xóa banner thành công",
   NOT_FOUND: "Không tìm thấy banner",
-  SERVER_ERROR: "Lỗi server"
+  SERVER_ERROR: "Lỗi server",
+  TITLE_REQUIRED: "Tiêu đề banner không được để trống"
 };
