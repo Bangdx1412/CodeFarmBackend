@@ -114,3 +114,26 @@ export const ORDER_MESSAGES = {
   COUPON_NOT_FOUND: "Mã giảm giá không tồn tại hoặc đã hết hạn",
   SERVER_ERROR: "Lỗi server"
 };
+
+export const CATEGORY_MESSAGES = {
+  GET_LIST_SUCCESS: "Lấy danh sách danh mục thành công",
+  GET_ACTIVE_SUCCESS: "Lấy danh sách danh mục active thành công",
+  GET_DELETED_SUCCESS: "Lấy danh sách danh mục đã xóa thành công",
+  CREATE_SUCCESS: "Tạo danh mục thành công",
+  UPDATE_SUCCESS: "Cập nhật danh mục thành công",
+  SOFT_DELETE_SUCCESS: "Xóa mềm danh mục thành công",
+  HARD_DELETE_SUCCESS: "Xóa cứng danh mục thành công",
+  RESTORE_SUCCESS: "Khôi phục danh mục thành công",
+  NOT_FOUND: "Không tìm thấy danh mục",
+  TITLE_REQUIRED: "Tiêu đề danh mục không được để trống",
+  PARENT_NOT_FOUND: "Không tìm thấy danh mục cha",
+  CANNOT_BE_OWN_PARENT: "Danh mục không thể là cha của chính nó",
+  INVALID_STATUS: "Trạng thái không hợp lệ (chỉ chấp nhận active hoặc inactive)",
+  INVALID_POSITION: "Vị trí không hợp lệ",
+  INVALID_IMAGE_TYPE: "Loại file ảnh không hợp lệ (chỉ chấp nhận jpeg, jpg, png, gif, webp)",
+  SERVER_ERROR: "Lỗi máy chủ",
+  NO_CATEGORIES: "Không có danh mục nào",
+  NO_DELETED_CATEGORIES: "Không có danh mục nào đã bị xóa",
+  UNAUTHORIZED: "Bạn không có quyền thực hiện thao tác này",
+  INVALID_ID: "ID không hợp lệ"
+};
