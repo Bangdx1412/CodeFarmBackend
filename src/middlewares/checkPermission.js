@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../configs/enviroments.js";
+import Account from "../models/Account.model.js";
 
 const checkPermission = {
   isAdmin: (req, res, next) => {
@@ -43,7 +44,7 @@ const checkPermission = {
     }
   },
 
-  verifyToken: (req, res, next) => {
+  verifyToken: async (req, res, next) => {
     try {
       const token = req.headers.authorization?.split(" ")[1];
       
@@ -56,7 +57,26 @@ const checkPermission = {
       }
 
       const decoded = jwt.verify(token, JWT_SECRET);
-      req.user = decoded;
+      
+      // Tìm user trong database để lấy thông tin đầy đủ
+      const user = await Account.findById(decoded.id);
+      
+      if (!user) {
+        return res.status(401).json({
+          status: false,
+          message: "Không tìm thấy người dùng",
+          statusCode: 401
+        });
+      }
+
+      // Gán thông tin user vào request
+      req.user = {
+        _id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role
+      };
+      
       return next();
 
     } catch (error) {

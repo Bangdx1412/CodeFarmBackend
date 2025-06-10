@@ -1,37 +1,73 @@
 import Category from "../models/Category.model.js";
+import Product from "../models/Product.model.js";
 import { sendSuccess } from "../middlewares/success.middleware.js";
 import tree from "../helpers/createTree.js";
+import { CATEGORY_MESSAGES } from "../constants/message.js";
+import { v2 as cloudinary } from 'cloudinary';
 
-// Lấy danh sách danh mục
+// Lấy danh sách danh mục (chỉ lấy những danh mục chưa bị xóa)
 export const getCategories = async (req, res) => {
   try {
     let find = {
-      deleted : false
+      deleted: false
     }
 
     const categories = await Category.find(find)
-      .select('title parent_id description thumbnails status position slug');
 
     if (!categories || categories.length === 0) {
-      return sendSuccess(
-        res,
-        { categories: [] },
-        "Không có danh mục nào"
-      );
+      return res.status(200).json({
+        status: true,
+        message: CATEGORY_MESSAGES.NO_CATEGORIES,
+        data: { categories: [] }
+      });
     }
     const categoryTree = tree(categories);
 
-    return sendSuccess(
-      res,
-      { categories: categoryTree },
-      "Lấy danh sách danh mục thành công"
-    );
+    return res.status(200).json({
+      status: true,
+      message: CATEGORY_MESSAGES.GET_LIST_SUCCESS,
+      data: { categories: categoryTree }
+    });
     
   } catch (error) {
-    console.error("Lỗi lấy danh sách danh mục:", error);
     return res.status(500).json({
       status: false,
-      message: "Lỗi server",
+      message: CATEGORY_MESSAGES.SERVER_ERROR,
+      error: error.message
+    });
+  }
+};
+
+// Lấy danh sách danh mục active và chưa bị xóa mềm
+export const getActiveCategories = async (req, res) => {
+  try {
+    const categories = await Category.find({
+      deleted: false,
+      status: "active"
+    }).sort({ position: 1 });
+
+    if (!categories || categories.length === 0) {
+      return res.status(200).json({
+        status: true,
+        message: CATEGORY_MESSAGES.NO_CATEGORIES,
+        data: { categories: [] }
+      });
+    }
+    
+    const categoryTree = tree(categories);
+    
+    return res.status(200).json({
+      status: true,
+      message: CATEGORY_MESSAGES.GET_ACTIVE_SUCCESS,
+      data: { 
+        categories: categoryTree,
+        total: categories.length
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: CATEGORY_MESSAGES.SERVER_ERROR,
       error: error.message
     });
   }
@@ -40,45 +76,245 @@ export const getCategories = async (req, res) => {
 // Thêm danh mục mới
 export const createCategory = async (req, res) => {
   try {
-    if (req.body.position == ""||!req.body.position) {
-      // đếm số bản ghi trong bảng category
-      const count = await Category.countDocuments();
-      req.body.position = count + 1;
+    const { title, parent_id, description, status, position } = req.body;
+
+    const categoryData = {
+      title,
+      parent_id: parent_id || "",
+      description: description || "",
+      status: status || "active",
+      deleted: false,
+      thumbnails: req.body.thumbnails || ""
+    };
+
+    if (position && !isNaN(position)) {
+      categoryData.position = parseInt(position);
     } else {
-      req.body.position = parseInt(req.body.position);
+      const count = await Category.countDocuments();
+      categoryData.position = count + 1;
     }
-    const category = new Category(req.body);
+
+    const category = new Category(categoryData);
     await category.save();
 
-    return sendSuccess(
-      res,
-      category,
-      "Thêm danh mục thành công"
-    );
+    return res.status(201).json({
+      status: true,
+      message: CATEGORY_MESSAGES.CREATE_SUCCESS,
+      data: category
+    });
   } catch (error) {
-    console.error("Lỗi thêm danh mục:", error);
     return res.status(500).json({
       status: false,
-      message: "Lỗi server",
-      error: error.message,
-      statusCode: 500
+      message: CATEGORY_MESSAGES.SERVER_ERROR,
+      error: error.message
     });
   }
 };
 
 // Cập nhật danh mục
-export const updateCategory = (async (req, res) => {
-  const id = req.params.id;
-  const { title } = req.body;
-  const updated = await Category.findByIdAndUpdate(id, { title }, { new: true });
-  if (!updated) throw new Error("Không tìm thấy danh mục");
-  sendSuccess(res, updated, "Cập nhật danh mục thành công");
-});
+export const updateCategory = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { title, parent_id, description, status, position } = req.body;
 
-// Xóa danh mục
-export const deleteCategory = (async (req, res) => {
-  const id = req.params.id;
-  const deleted = await Category.findByIdAndDelete(id);
-  if (!deleted) throw new Error("Không tìm thấy danh mục để xóa");
-  sendSuccess(res, deleted, "Xóa danh mục thành công");
-});
+    const currentCategory = await Category.findById(id);
+    if (!currentCategory) {
+      return res.status(404).json({
+        status: false,
+        message: CATEGORY_MESSAGES.NOT_FOUND
+      });
+    }
+
+    // Chuẩn bị dữ liệu cập nhật
+    const updateData = {};
+
+    // Chỉ cập nhật các trường được gửi lên
+    if (title !== undefined) updateData.title = title;
+    if (parent_id !== undefined) updateData.parent_id = parent_id;
+    if (description !== undefined) updateData.description = description;
+    if (status !== undefined) updateData.status = status;
+    if (position !== undefined) updateData.position = parseInt(position);
+
+    // Xử lý ảnh nếu có upload ảnh mới
+    if (req.body.thumbnails) {
+      // Nếu có ảnh cũ, xóa ảnh cũ trên Cloudinary
+      if (currentCategory.thumbnails) {
+        const publicId = currentCategory.thumbnails.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      }
+      updateData.thumbnails = req.body.thumbnails;
+    }
+
+    // Nếu không có gì thay đổi
+    if (Object.keys(updateData).length === 0) {
+      return res.status(200).json({
+        status: true,
+        message: "Không có thay đổi nào được cập nhật",
+        data: currentCategory
+      });
+    }
+
+    // Cập nhật danh mục
+    const updatedCategory = await Category.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: CATEGORY_MESSAGES.UPDATE_SUCCESS,
+      data: updatedCategory
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: CATEGORY_MESSAGES.SERVER_ERROR,
+      error: error.message
+    });
+  }
+};
+
+// Lấy danh sách danh mục đã bị xóa mềm
+export const getDeletedCategories = async (req, res) => {
+  try {
+    const categories = await Category.find({ deleted: true });
+
+    if (!categories || categories.length === 0) {
+      return res.status(200).json({
+        status: true,
+        message: CATEGORY_MESSAGES.NO_DELETED_CATEGORIES,
+        data: { categories: [] }
+      });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: CATEGORY_MESSAGES.GET_DELETED_SUCCESS,
+      data: { categories }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: CATEGORY_MESSAGES.SERVER_ERROR,
+      error: error.message
+    });
+  }
+};
+
+// Xóa mềm danh mục
+export const softDeleteCategory = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const category = await Category.findById(id);
+    
+    if (!category) {
+      return res.status(404).json({
+        status: false,
+        message: CATEGORY_MESSAGES.NOT_FOUND
+      });
+    }
+
+    // Cập nhật trường deleted thành true
+    const updatedCategory = await Category.findByIdAndUpdate(
+      id,
+      { deleted: true },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: CATEGORY_MESSAGES.SOFT_DELETE_SUCCESS,
+      data: updatedCategory
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: CATEGORY_MESSAGES.SERVER_ERROR,
+      error: error.message
+    });
+  }
+};
+
+// Xóa cứng danh mục
+export const hardDeleteCategory = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const category = await Category.findById(id);
+    
+    if (!category) {
+      return res.status(404).json({
+        status: false,
+        message: CATEGORY_MESSAGES.NOT_FOUND
+      });
+    }
+
+    // Kiểm tra xem có sản phẩm nào thuộc danh mục này không
+    const products = await Product.find({ product_category_id: id });
+    if (products.length > 0) {
+      // Cập nhật product_category_id của các sản phẩm thành null
+      await Product.updateMany(
+        { product_category_id: id },
+        { product_category_id: null }
+      );
+    }
+
+    // Xóa ảnh trên Cloudinary nếu có
+    if (category.thumbnails) {
+      const publicId = category.thumbnails.split('/').pop().split('.')[0];
+      await cloudinary.uploader.destroy(publicId);
+    }
+
+    // Xóa cứng danh mục
+    await Category.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      status: true,
+      message: CATEGORY_MESSAGES.HARD_DELETE_SUCCESS,
+      data: {
+        deletedCategory: category,
+        affectedProducts: products.length
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: CATEGORY_MESSAGES.SERVER_ERROR,
+      error: error.message
+    });
+  }
+};
+
+// Khôi phục danh mục đã bị xóa mềm
+export const restoreCategory = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const category = await Category.findById(id);
+    
+    if (!category) {
+      return res.status(404).json({
+        status: false,
+        message: CATEGORY_MESSAGES.NOT_FOUND
+      });
+    }
+
+    // Cập nhật trường deleted thành false
+    const restoredCategory = await Category.findByIdAndUpdate(
+      id,
+      { deleted: false },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: CATEGORY_MESSAGES.RESTORE_SUCCESS,
+      data: restoredCategory
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: CATEGORY_MESSAGES.SERVER_ERROR,
+      error: error.message
+    });
+  }
+}; 

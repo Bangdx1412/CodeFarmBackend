@@ -9,7 +9,11 @@ const categorySchema = new mongoose.Schema({
 		default:""
 	},
 	thumbnails:String,
-	status: String,
+	status: {
+		type: String,
+		enum: ["active", "inactive"],
+		default: "active",
+	  },
 	position: Number,
 	slug: {
         type: String,
