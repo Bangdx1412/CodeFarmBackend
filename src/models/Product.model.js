@@ -6,6 +6,7 @@ const productSchema = new mongoose.Schema({
   product_category_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
+    default: null
   },
   description: {
     type: String,
@@ -35,7 +36,11 @@ const productSchema = new mongoose.Schema({
       updatedAt: Date
     }
   ],
-  status: String,
+  status: {
+    type: String,
+    enum: ["active", "inactive"],
+    default: "active"
+  },
   position: Number,
   slug: {
     type: String,
@@ -47,11 +52,9 @@ const productSchema = new mongoose.Schema({
     default: false
   },
   deletedAt: Date,
-
-  // Thêm biến thể theo size
   variants: [
     {
-      size: String, // Ví dụ: "S", "M", "L", "XL"
+      size: String, 
       stock: Number
     }
   ]
