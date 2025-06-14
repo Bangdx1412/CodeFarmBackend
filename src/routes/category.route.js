@@ -7,7 +7,8 @@ import {
   softDeleteCategory,
   hardDeleteCategory,
   restoreCategory,
-  getActiveCategories
+  getActiveCategories,
+  getCateById
 } from "../controllers/category.controller.js";
 import multer from "multer";
 import { uploadCloud } from "../middlewares/uploadCloud.js";
@@ -107,4 +108,5 @@ router.patch(
 // Lấy danh sách danh mục active và chưa bị xóa mềm (cho frontend)
 router.get("/activeCategories", getActiveCategories);
 
+router.get("/:id",getCateById)
 export default router;
