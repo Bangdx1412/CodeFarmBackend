@@ -2,8 +2,9 @@ import Category from "../models/Category.model.js";
 import Product from "../models/Product.model.js";
 import { sendSuccess } from "../middlewares/success.middleware.js";
 import tree from "../helpers/createTree.js";
-import { CATEGORY_MESSAGES } from "../constants/message.js";
+import { CATEGORY_MESSAGES, PRODUCT_MESSAGES } from "../constants/message.js";
 import { v2 as cloudinary } from 'cloudinary';
+import mongoose from "mongoose";
 
 // Lấy danh sách danh mục (chỉ lấy những danh mục chưa bị xóa)
 export const getCategories = async (req, res) => {
@@ -304,7 +305,6 @@ export const restoreCategory = async (req, res) => {
       { deleted: false },
       { new: true }
     );
-
     return res.status(200).json({
       status: true,
       message: CATEGORY_MESSAGES.RESTORE_SUCCESS,
@@ -318,3 +318,43 @@ export const restoreCategory = async (req, res) => {
     });
   }
 }; 
+export const getCateById = async (req,res)=>{
+  try {
+    const id = req.params.id;
+   
+    const category = await Category.findById(id);
+    if(!category){
+      return res.status(404).json({
+        status: false,
+        message: CATEGORY_MESSAGES.NO_CATEGORIES,
+        error: error.message
+      });
+    }
+      const products = await Product.find({product_category_id:id ,deleted:false});
+      
+      if(!products){
+        return res.status(404).json({
+          status: false,
+          message: PRODUCT_MESSAGES.NO_PRODUCT,
+          error: error.message
+        });
+      }else{
+        return res.status(200).json({
+          status:true,
+          data: {
+            category,
+            products
+          },
+          message:PRODUCT_MESSAGES.GET_LIST_SUCCESS
+        })
+      }
+    
+  
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: CATEGORY_MESSAGES.SERVER_ERROR,
+      error: error.message
+    });
+  }
+}

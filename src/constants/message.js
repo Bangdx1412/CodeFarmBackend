@@ -22,7 +22,8 @@ export const PRODUCT_MESSAGES = {
   INVALID_ID: "ID không hợp lệ",
   DUPLICATE_KEY: "Dữ liệu bị trùng lặp (ví dụ: title hoặc slug đã tồn tại)",
   UPLOAD_SUCCESS: "Tải ảnh lên thành công",
-  UPLOAD_FAILED: "Tải ảnh lên thất bại"
+  UPLOAD_FAILED: "Tải ảnh lên thất bại",
+  NO_PRODUCT:"Không có sản phẩm nào"
 };
 export const COUPON_MESSAGES = {
   CREATE_SUCCESS: "Tạo mã giảm giá thành công",
