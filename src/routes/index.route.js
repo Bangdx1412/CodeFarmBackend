@@ -1,32 +1,30 @@
 import { Router } from "express";
-import productRoute  from "./product.route.js";
-import categoryRoute  from "./category.route.js";
-import authRoute  from "./auth.route.js";
-import wishlistRoute from "./wishlist.route.js";
-import userRoute  from "./user.route.js";
-import couponRoute from "./coupon.route.js";
-import cartRoute from "./cart.route.js";
-import Contact from "./contact.route.js";
-import bannerRoute from "./banner.route.js";
-import shippingMethodRoute from "./shippingMethod.route.js";
-import orderRoute from "./order.route.js";
+import authRoute  from "../modules/auth/auth.routes.js";
+import accountRoute  from "../modules/accounts/account.routes.js";
+import categoryRoute  from "../modules/categories/category.routes.js";
+import productRoute  from "../modules/products/product.routes.js";
+import cartRoute from "../modules/cart/cart.routes.js";
+import wishlistRoute from "../modules/wishlists/wishlist.routes.js";
+import shippingMethodRoute from "../modules/shipping-method/shipping-method.routes.js";
+import orderRoute from "../modules/orders/order.routes.js";
+import couponRoute from "../modules/coupons/coupon.routes.js";
+import bannerRoute from "../modules/banners/banner.routes.js";
+import Contact from "../modules/contacts/contact.routes.js";
 
 const routes = Router();
 
-routes.use("/products", productRoute)
-routes.use("/categories", categoryRoute)
 routes.use("/auth", authRoute)
-
-routes.use("/wishlist", wishlistRoute);
-routes.use("/user", userRoute)
-routes.use("/coupon", couponRoute);
+routes.use("/user", accountRoute)
+routes.use("/categories", categoryRoute)
+routes.use("/products", productRoute)
 routes.use("/cart", cartRoute);
-routes.use("/contact", Contact);
-routes.use("/banners", bannerRoute);
+routes.use("/wishlist", wishlistRoute);
 routes.use("/shipping-methods", shippingMethodRoute);
 routes.use("/orders", orderRoute);
-// routes.use("/products", hanldeProduct...)
-// routes.use("/products", hanldeProduct...)
-// routes.use("/products", hanldeProduct...)
+routes.use("/coupon", couponRoute);
+routes.use("/banners", bannerRoute);
+routes.use("/contact", Contact);
+
+
 
 export default routes;

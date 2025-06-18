@@ -1,4 +1,4 @@
-import Category from "../models/Category.model.js";
+import Category from "../modules/categories/category.model.js";
 import { CATEGORY_MESSAGES } from "../constants/message.js";
 
 export const validateCreateCategory = async (req, res, next) => {
