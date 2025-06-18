@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../configs/enviroments.js";
-import Account from "../models/Account.model.js";
+import Account from "../modules/accounts/account.model.js";
 
 const checkPermission = {
   isAdmin: (req, res, next) => {
