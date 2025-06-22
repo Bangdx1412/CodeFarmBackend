@@ -8,6 +8,9 @@ import {
   deleteProduct,
   restoreProduct,
   addProductVariant,
+  updateProductVariant,
+  deleteProductVariant,
+  getProductVariant,
   getDeletedProducts,
   getActiveProducts,
   getProductsByCategory,
@@ -26,6 +29,8 @@ import {
   createProductSchema,
   updateProductSchema,
   addVariantsSchema,
+  updateVariantSchema,
+  deleteVariantSchema,
   idSchema,
   productQuerySchema,
 } from "../../validations/product.validation.js";
@@ -92,6 +97,7 @@ router.patch(
   validateParams(z.object({ id: idSchema })),
   restoreProduct
 );
+
 router.post(
   "/:id/variants",
   checkPermission.verifyToken,
@@ -99,6 +105,41 @@ router.post(
   validateParams(z.object({ id: idSchema })),
   validateRequest(addVariantsSchema),
   addProductVariant
+);
+
+// Cập nhật biến thể sản phẩm
+router.put(
+  "/:id/variants/:variantIndex",
+  checkPermission.verifyToken,
+  checkPermission.isAdmin,
+  validateParams(z.object({ 
+    id: idSchema,
+    variantIndex: z.coerce.number().int().min(0, "Index biến thể không hợp lệ")
+  })),
+  validateRequest(updateVariantSchema),
+  updateProductVariant
+);
+
+// Xóa biến thể sản phẩm
+router.delete(
+  "/:id/variants/:variantIndex",
+  checkPermission.verifyToken,
+  checkPermission.isAdmin,
+  validateParams(z.object({ 
+    id: idSchema,
+    variantIndex: z.coerce.number().int().min(0, "Index biến thể không hợp lệ")
+  })),
+  deleteProductVariant
+);
+
+// Lấy thông tin chi tiết của một biến thể
+router.get(
+  "/:id/variants/:variantIndex",
+  validateParams(z.object({ 
+    id: idSchema,
+    variantIndex: z.coerce.number().int().min(0, "Index biến thể không hợp lệ")
+  })),
+  getProductVariant
 );
 
 // Route lấy sản phẩm theo ID phải đặt sau các route khác
