@@ -72,6 +72,10 @@ const productSchema = new mongoose.Schema(
     deletedAt: Date,
     variants: [
       {
+        _id: {
+          type: mongoose.Schema.Types.ObjectId,
+          auto: true,
+        },
         size: String,
         stock: {
           type: Number,

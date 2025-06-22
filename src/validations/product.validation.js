@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 // Schema cho biến thể sản phẩm
 const variantSchema = z.object({
   size: z.string().min(1, "Kích thước không được để trống"),
-  stock: z.number().int().min(0, "Số lượng tồn kho phải lớn hơn hoặc bằng 0"),
+  stock: z.coerce.number().int().min(0, "Số lượng tồn kho phải lớn hơn hoặc bằng 0"),
   price: z.number().min(0, "Giá phải lớn hơn hoặc bằng 0").optional(),
   discount: z.number().min(0, "Giảm giá phải lớn hơn hoặc bằng 0").optional(),
   thumbnails: z.array(z.string()).optional(),
@@ -154,7 +154,24 @@ export const updateProductSchema = z
 export const addVariantsSchema = z.object({
   variants: z
     .union([z.array(variantSchema), variantSchema])
-    .transform((data) => (Array.isArray(data) ? data : [data])),
+    .transform((data) => (Array.isArray(data) ? data : [data]))
+    .refine(
+      (variants) => {
+        return variants.length > 0;
+      },
+      { message: "Cần ít nhất một biến thể" }
+    ),
+});
+
+// Schema cho cập nhật biến thể
+export const updateVariantSchema = z.object({
+  size: z.string().min(1, "Kích thước không được để trống"),
+  stock: z.coerce.number().int().min(0, "Số lượng tồn kho phải lớn hơn hoặc bằng 0"),
+});
+
+// Schema cho xóa biến thể
+export const deleteVariantSchema = z.object({
+  variantId: z.string().min(1, "ID biến thể không được để trống"),
 });
 
 // Schema cho query parameters

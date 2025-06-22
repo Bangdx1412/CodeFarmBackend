@@ -5,6 +5,7 @@ import { PRODUCT_MESSAGES } from "../../constants/message.js";
 import cloudinary from "../../configs/cloudinary.js";
 import searchHelper from "../../helpers/search.js";
 import handlePagination from "../../helpers/pagination.js";
+import mongoose from "mongoose";
 
 export const getProducts = async (req, res, next) => {
   try {
@@ -425,31 +426,47 @@ export const addProductVariant = async (req, res, next) => {
       return sendError(res, "Sản phẩm đã bị xóa", 400);
     }
 
-    // Kiểm tra danh mục tồn tại và chưa bị xóa mềm
+    // Kiểm tra danh mục tồn tại và chưa bị xóa mềm (nếu có)
     if (product.product_category_id) {
       const category = await Category.findById(product.product_category_id);
       if (!category || category.deleted) {
-        return sendError(res, "Danh mục không tồn tại hoặc đã bị xóa", 400);
+        // Nếu danh mục không tồn tại hoặc đã bị xóa, set product_category_id về null
+        product.product_category_id = null;
       }
     }
 
+    // Khởi tạo mảng variants nếu chưa có
+    if (!product.variants) {
+      product.variants = [];
+    }
+
     // Xử lý thêm biến thể mới
+    // Gộp các biến thể cùng size trong request trước
+    const mergedVariants = {};
     for (const newVariant of variants) {
-      // Tìm biến thể có cùng size
+      if (mergedVariants[newVariant.size]) {
+        mergedVariants[newVariant.size].stock += newVariant.stock;
+      } else {
+        mergedVariants[newVariant.size] = { ...newVariant };
+      }
+    }
+
+    // Thêm hoặc cập nhật biến thể vào sản phẩm
+    for (const [size, variant] of Object.entries(mergedVariants)) {
       const existingVariantIndex = product.variants.findIndex(
-        (v) => v.size === newVariant.size
+        (v) => v.size === size
       );
 
       if (existingVariantIndex !== -1) {
         // Nếu đã tồn tại, cộng thêm stock
-        product.variants[existingVariantIndex].stock += newVariant.stock;
+        product.variants[existingVariantIndex].stock += variant.stock;
       } else {
         // Nếu chưa tồn tại, thêm mới
-        product.variants.push(newVariant);
+        product.variants.push(variant);
       }
     }
 
-    // Tính toán lại tổng stock
+    // Tính toán lại tổng stock từ tất cả biến thể
     const totalStock = product.variants.reduce(
       (sum, variant) => sum + variant.stock,
       0
@@ -459,13 +476,22 @@ export const addProductVariant = async (req, res, next) => {
     // Lưu sản phẩm đã cập nhật
     await product.save();
 
-    // Populate thông tin danh mục
-    await product.populate(
-      "product_category_id",
-      "title parent_id description thumbnails status position slug"
-    );
+    // Populate thông tin danh mục (nếu có)
+    if (product.product_category_id) {
+      await product.populate(
+        "product_category_id",
+        "title parent_id description thumbnails status position slug"
+      );
+    }
 
-    return sendSuccess(res, { product }, "Thêm biến thể sản phẩm thành công");
+    return sendSuccess(
+      res, 
+      { 
+        product,
+        message: `Đã xử lý ${Object.keys(mergedVariants).length} biến thể cho sản phẩm. Tổng stock hiện tại: ${totalStock}`
+      }, 
+      "Thêm biến thể sản phẩm thành công"
+    );
   } catch (error) {
     next(error);
   }
@@ -595,6 +621,179 @@ export const getProductsByCategory = async (req, res, next) => {
         "Lấy danh sách sản phẩm theo danh mục thành công"
       );
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Cập nhật biến thể sản phẩm
+export const updateProductVariant = async (req, res, next) => {
+  try {
+    const { id, variantIndex } = req.params;
+    const { size, stock } = req.body;
+
+    const product = await Product.findById(id);
+    if (!product) {
+      return sendError(res, "Không tìm thấy sản phẩm", 404);
+    }
+
+    if (product.deleted) {
+      return sendError(res, "Sản phẩm đã bị xóa", 400);
+    }
+
+    const index = parseInt(variantIndex);
+    if (index < 0 || index >= product.variants.length) {
+      return sendError(res, "Index biến thể không hợp lệ", 400);
+    }
+
+    // Kiểm tra size mới có trùng với biến thể khác không (nếu thay đổi size)
+    if (size !== product.variants[index].size) {
+      const existingVariant = product.variants.find(
+        (v, i) => i !== index && v.size === size
+      );
+      if (existingVariant) {
+        return sendError(res, "Size này đã tồn tại trong sản phẩm", 400);
+      }
+    }
+
+    // Lưu stock cũ để tính toán
+    const oldStock = product.variants[index].stock;
+
+    // Cập nhật biến thể
+    product.variants[index].size = size;
+    product.variants[index].stock = stock;
+
+    // Tính toán lại tổng stock
+    const totalStock = product.variants.reduce(
+      (sum, variant) => sum + variant.stock,
+      0
+    );
+    product.stock = totalStock;
+
+    await product.save();
+
+    if (product.product_category_id) {
+      await product.populate(
+        "product_category_id",
+        "title parent_id description thumbnails status position slug"
+      );
+    }
+
+    return sendSuccess(
+      res,
+      {
+        product,
+        updatedVariant: product.variants[index],
+        message: `Đã cập nhật biến thể size ${size}. Stock thay đổi: ${oldStock} → ${stock}. Tổng stock: ${totalStock}`
+      },
+      "Cập nhật biến thể sản phẩm thành công"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Xóa biến thể sản phẩm
+export const deleteProductVariant = async (req, res, next) => {
+  try {
+    const { id, variantIndex } = req.params;
+
+    const product = await Product.findById(id);
+    if (!product) {
+      return sendError(res, "Không tìm thấy sản phẩm", 404);
+    }
+
+    if (product.deleted) {
+      return sendError(res, "Sản phẩm đã bị xóa", 400);
+    }
+
+    const index = parseInt(variantIndex);
+    if (index < 0 || index >= product.variants.length) {
+      return sendError(res, "Index biến thể không hợp lệ", 400);
+    }
+
+    // Lưu thông tin biến thể trước khi xóa
+    const deletedVariant = product.variants[index];
+    const deletedStock = deletedVariant.stock;
+
+    // Xóa biến thể khỏi mảng
+    product.variants.splice(index, 1);
+
+    // Tính toán lại tổng stock
+    const totalStock = product.variants.reduce(
+      (sum, variant) => sum + variant.stock,
+      0
+    );
+    product.stock = totalStock;
+
+    await product.save();
+
+    if (product.product_category_id) {
+      await product.populate(
+        "product_category_id",
+        "title parent_id description thumbnails status position slug"
+      );
+    }
+
+    return sendSuccess(
+      res,
+      {
+        product,
+        deletedVariant,
+        message: `Đã xóa biến thể size ${deletedVariant.size} với stock ${deletedStock}. Tổng stock hiện tại: ${totalStock}`
+      },
+      "Xóa biến thể sản phẩm thành công"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Lấy thông tin chi tiết của một biến thể
+export const getProductVariant = async (req, res, next) => {
+  try {
+    const { id, variantIndex } = req.params;
+
+    const product = await Product.findById(id);
+    if (!product) {
+      return sendError(res, "Không tìm thấy sản phẩm", 404);
+    }
+
+    if (product.deleted) {
+      return sendError(res, "Sản phẩm đã bị xóa", 400);
+    }
+
+    // Kiểm tra index hợp lệ
+    const index = parseInt(variantIndex);
+    if (index < 0 || index >= product.variants.length) {
+      return sendError(res, "Index biến thể không hợp lệ", 400);
+    }
+
+    const variant = product.variants[index];
+
+    if (product.product_category_id) {
+      await product.populate(
+        "product_category_id",
+        "title parent_id description thumbnails status position slug"
+      );
+    }
+
+    return sendSuccess(
+      res,
+      {
+        product: {
+          _id: product._id,
+          title: product.title,
+          slug: product.slug,
+          price: product.price,
+          stock: product.stock,
+          product_category_id: product.product_category_id,
+        },
+        variant,
+        totalVariants: product.variants.length
+      },
+      "Lấy thông tin biến thể thành công"
+    );
   } catch (error) {
     next(error);
   }
