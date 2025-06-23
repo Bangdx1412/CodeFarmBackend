@@ -10,6 +10,7 @@ import orderRoute from "../modules/orders/order.routes.js";
 import couponRoute from "../modules/coupons/coupon.routes.js";
 import bannerRoute from "../modules/banners/banner.routes.js";
 import Contact from "../modules/contacts/contact.routes.js";
+import paymentRoute from "../modules/payments/payment.route.js";
 
 const routes = Router();
 
@@ -24,6 +25,7 @@ routes.use("/orders", orderRoute);
 routes.use("/coupon", couponRoute);
 routes.use("/banners", bannerRoute);
 routes.use("/contact", Contact);
+routes.use("/payments", paymentRoute);
 
 
 

@@ -6053,6 +6053,261 @@
           }
         }
       }
+    },
+    "/orders": {
+      "post": {
+        "tags": ["Orders"],
+        "summary": "Tạo đơn hàng mới",
+        "description": "Tạo đơn hàng mới cho user đã đăng nhập",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "shippingAddress": {
+                  "type": "object",
+                  "example": {
+                    "fullName": "Nguyễn Văn A",
+                    "phone": "0123456789",
+                    "addressLine": "123 Đường ABC",
+                    "ward": "Phường 1",
+                    "district": "Quận 1",
+                    "province": "TP.HCM"
+                  }
+                },
+                "shippingMethod": {
+                  "type": "object",
+                  "example": {"name": "Giao hàng nhanh", "fee": 30000}
+                },
+                "payment_method": {"type": "string", "enum": ["cod", "vnpay"], "example": "vnpay"},
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "productId": {"type": "string", "example": "65f2e8b7c261e6001234abcd"},
+                      "variant": {"type": "object", "example": {"size": "M"}},
+                      "quantity": {"type": "number", "example": 2}
+                    }
+                  },
+                  "example": [
+                    {"productId": "65f2e8b7c261e6001234abcd", "variant": {"size": "M"}, "quantity": 2}
+                  ]
+                },
+                "couponCode": {"type": "string", "example": "SALE10"},
+                "note": {"type": "string", "example": "Giao giờ hành chính"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Tạo đơn hàng thành công",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {"type": "boolean", "example": true},
+                "message": {"type": "string", "example": "Tạo đơn hàng thành công"},
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {"type": "string", "example": "65f2e8b7c261e6001234abcd"},
+                    "user_id": {"type": "string", "example": "65f2e8b7c261e6001234abce"},
+                    "shippingAddress": {"type": "object", "example": {"fullName": "Nguyễn Văn A", "phone": "0123456789", "addressLine": "123 Đường ABC", "ward": "Phường 1", "district": "Quận 1", "province": "TP.HCM"}},
+                    "shippingMethod": {"type": "object", "example": {"name": "Giao hàng nhanh", "fee": 30000}},
+                    "payment_method": {"type": "string", "example": "vnpay"},
+                    "orderItems": {"type": "array", "example": [{"productId": "65f2e8b7c261e6001234abcd", "productName": "Áo thun nam", "imageUrl": "https://example.com/image.jpg", "variant": {"size": "M"}, "quantity": 2, "unitPrice": 200000, "discountedPrice": 180000}]},
+                    "coupon": {"type": "object", "example": {"code": "SALE10", "discount_amount": 36000}},
+                    "subtotal": {"type": "number", "example": 360000},
+                    "shipping_fee": {"type": "number", "example": 30000},
+                    "discount": {"type": "number", "example": 36000},
+                    "final_price": {"type": "number", "example": 354000},
+                    "status": {"type": "string", "example": "pending"},
+                    "note": {"type": "string", "example": "Giao giờ hành chính"},
+                    "paymentStatus": {"type": "string", "example": "pending"},
+                    "paymentTime": {"type": "string", "example": null},
+                    "createdAt": {"type": "string", "example": "2024-06-01T10:00:00.000Z"}
+                  }
+                },
+                "statusCode": {"type": "number", "example": 201}
+              }
+            }
+          },
+          "400": {"description": "Lỗi dữ liệu"},
+          "500": {"description": "Lỗi server"}
+        }
+      },
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Lấy danh sách đơn hàng của user",
+        "description": "Lấy tất cả đơn hàng của user đã đăng nhập",
+        "responses": {
+          "200": {
+            "description": "Lấy danh sách đơn hàng thành công",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {"type": "boolean", "example": true},
+                "message": {"type": "string", "example": "Lấy danh sách đơn hàng thành công"},
+                "data": {"type": "array", "items": {"type": "object"}},
+                "statusCode": {"type": "number", "example": 200}
+              }
+            }
+          },
+          "500": {"description": "Lỗi server"}
+        }
+      }
+    },
+    "/orders/get-all-order": {
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Lấy tất cả đơn hàng (admin)",
+        "description": "Chỉ admin mới có quyền truy cập",
+        "responses": {
+          "200": {
+            "description": "Lấy danh sách đơn hàng thành công",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {"type": "boolean", "example": true},
+                "message": {"type": "string", "example": "Lấy danh sách đơn hàng thành công"},
+                "data": {"type": "array", "items": {"type": "object"}},
+                "statusCode": {"type": "number", "example": 200}
+              }
+            }
+          },
+          "403": {"description": "Không có quyền truy cập"},
+          "500": {"description": "Lỗi server"}
+        }
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Lấy chi tiết đơn hàng theo ID",
+        "description": "Lấy chi tiết đơn hàng cho user đã đăng nhập",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "type": "string"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy đơn hàng thành công",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {"type": "boolean", "example": true},
+                "message": {"type": "string", "example": "Lấy đơn hàng thành công"},
+                "data": {"type": "object"},
+                "statusCode": {"type": "number", "example": 200}
+              }
+            }
+          },
+          "404": {"description": "Không tìm thấy đơn hàng"},
+          "500": {"description": "Lỗi server"}
+        }
+      }
+    },
+    "/orders/{id}/status": {
+      "put": {
+        "tags": ["Orders"],
+        "summary": "Cập nhật trạng thái đơn hàng (admin)",
+        "description": "Chỉ admin mới có quyền cập nhật trạng thái đơn hàng.\n\nTrạng thái hợp lệ: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].\nChỉ cho phép chuyển tiếp đúng luồng hoặc huỷ đơn.",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "type": "string", "description": "ID đơn hàng"},
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {"type": "string", "enum": ["pending", "confirmed", "shipped", "delivered", "cancelled"], "example": "confirmed"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cập nhật trạng thái thành công",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {"type": "boolean", "example": true},
+                "message": {"type": "string", "example": "Cập nhật trạng thái đơn hàng thành công"},
+                "data": {"type": "object", "example": {"_id": "65f2e8b7c261e6001234abcd", "status": "confirmed"}},
+                "statusCode": {"type": "number", "example": 200}
+              }
+            }
+          },
+          "400": {"description": "Trạng thái không hợp lệ hoặc không cho phép chuyển trạng thái"},
+          "404": {"description": "Không tìm thấy đơn hàng"},
+          "500": {"description": "Lỗi server"}
+        }
+      }
+    },
+    "/payments/vnpay/create-qr": {
+      "post": {
+        "tags": ["Payments"],
+        "summary": "Tạo QR thanh toán VNPay",
+        "description": "Tạo link thanh toán VNPay cho đơn hàng.\n\n**Thông tin thẻ test VNPay (NCB):**\n- Ngân hàng: NCB\n- Số thẻ: 9704198526191432198\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n- Mật khẩu OTP: 123456\n\nDùng các thông tin này để test thanh toán trên sandbox VNPay.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "cartId": {"type": "string", "description": "ID giỏ hàng", "example": "665f2e8b7c261e6001234abc1"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Tạo link thanh toán thành công",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "vnpUrl": {"type": "string", "example": "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?..."},
+                "vnp_TxnRef": {"type": "string", "example": "665f2e8b7c261e6001234abc1"},
+                "vnp_Amount": {"type": "number", "example": 36000000}
+              }
+            }
+          },
+          "400": {"description": "Thiếu cartId hoặc cart không tồn tại"},
+          "500": {"description": "Lỗi server"}
+        }
+      }
+    },
+    "/payments/vnpay/callback": {
+      "get": {
+        "tags": ["Payments"],
+        "summary": "Callback xác thực thanh toán VNPay",
+        "description": "VNPay gọi về endpoint này để xác thực kết quả thanh toán.\n\n**Thông tin thẻ test VNPay (NCB):**\n- Ngân hàng: NCB\n- Số thẻ: 9704198526191432198\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n- Mật khẩu OTP: 123456\n\nDùng các thông tin này để test thanh toán trên sandbox VNPay.",
+        "parameters": [
+          {"name": "vnp_TxnRef", "in": "query", "type": "string", "example": "665f2e8b7c261e6001234abc1"},
+          {"name": "vnp_ResponseCode", "in": "query", "type": "string", "example": "00"},
+          {"name": "vnp_TransactionNo", "in": "query", "type": "string", "example": "123456789"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Thanh toán thành công hoặc thất bại",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {"type": "boolean", "example": true},
+                "message": {"type": "string", "example": "Thanh toán thành công"},
+                "result": {"type": "object", "example": null}
+              }
+            }
+          },
+          "500": {"description": "Lỗi server"}
+        }
+      }
     }
   }
 }

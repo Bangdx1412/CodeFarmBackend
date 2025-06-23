@@ -7,6 +7,15 @@ import mongoose from "mongoose";
 import { validateCreateOrder, validateGetOrderById } from "../../validations/order.validation.js";
 import { ORDER_MESSAGES } from "../../constants/message.js";
 
+const ORDER_STATUS_ENUM = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
+const STATUS_FLOW = {
+  pending: ["confirmed", "cancelled"],
+  confirmed: ["shipped", "cancelled"],
+  shipped: ["delivered", "cancelled"],
+  delivered: [],
+  cancelled: []
+};
+
 export const createOrder = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -317,6 +326,60 @@ export const getOrdersAdmin = async (req, res) => {
     return res.status(500).json({
       status: false,
       message: ORDER_MESSAGES.SERVER_ERROR,
+      statusCode: 500
+    });
+  }
+};
+
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status: newStatus } = req.body;
+    if (!ORDER_STATUS_ENUM.includes(newStatus)) {
+      return res.status(400).json({
+        status: false,
+        message: ORDER_MESSAGES.INVALID_DATA,
+        error: "Trạng thái không hợp lệ",
+        statusCode: 400
+      });
+    }
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({
+        status: false,
+        message: ORDER_MESSAGES.NOT_FOUND,
+        statusCode: 404
+      });
+    }
+    const currentStatus = order.status;
+    if (currentStatus === newStatus) {
+      return res.status(400).json({
+        status: false,
+        message: "Trạng thái đơn hàng đã là " + newStatus,
+        statusCode: 400
+      });
+    }
+    // Chỉ cho phép chuyển tiếp đúng flow hoặc huỷ
+    if (newStatus !== "cancelled" && !STATUS_FLOW[currentStatus].includes(newStatus)) {
+      return res.status(400).json({
+        status: false,
+        message: `Không thể chuyển từ trạng thái ${currentStatus} sang ${newStatus}`,
+        statusCode: 400
+      });
+    }
+    order.status = newStatus;
+    await order.save();
+    return res.status(200).json({
+      status: true,
+      message: "Cập nhật trạng thái đơn hàng thành công",
+      data: order,
+      statusCode: 200
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: ORDER_MESSAGES.SERVER_ERROR,
+      error: error.message,
       statusCode: 500
     });
   }
