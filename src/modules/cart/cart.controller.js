@@ -298,3 +298,27 @@ export const getCart = async (req, res, next) => {
     next(error);
   }
 }; 
+
+// Xóa toàn bộ giỏ hàng
+export const clearCart = async (req, res, next) => {
+  try {
+    const user_id = req.user._id;
+    console.log("🚀 ~ clearCart ~ user_id:", user_id)
+    
+    const cart = await Cart.findOne({ user_id });
+    if (!cart) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: CART_MESSAGES.EMPTY_CART,
+      });
+    }
+    await cart.deleteOne();
+
+    sendSuccess(
+      res,
+      CART_MESSAGES.CLEAR_SUCCESS
+    );
+  } catch (error) {
+    next(error);
+  }
+};

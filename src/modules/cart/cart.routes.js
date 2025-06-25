@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addToCart, updateCartItem, removeFromCart, getCart } from "./cart.controller.js";
+import { addToCart, updateCartItem, removeFromCart,clearCart, getCart } from "./cart.controller.js";
 import checkPermission from "../../middlewares/checkPermission.js";
 
 const cartRoute = Router();
@@ -15,6 +15,9 @@ cartRoute.put("/update", updateCartItem);
 
 // Xóa sản phẩm khỏi giỏ hàng
 cartRoute.delete("/delete", removeFromCart);
+
+// Xóa giỏ hàng
+cartRoute.delete("/clearCart", clearCart);
 
 // Lấy chi tiết giỏ hàng
 cartRoute.get("/", getCart);
