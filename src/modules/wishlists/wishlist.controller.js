@@ -10,9 +10,13 @@ export const getWishlist = async (req, res) => {
         message: "Chưa có sản phẩm nào trong danh sách yêu thích",
       })
     }
+    // Lấy ra tất cả sản phẩm trong wishlist
+    const productIds = wishlist.products.map(p => p.product_id);
+    const products = await Product.find({ _id: { $in: productIds } });
+    
     return res.status(200).json({
       status: true,
-      data: wishlist.products,
+      data:products,
       message: "Danh sách yêu thích đã được lấy thành công",
     });
   } catch (err) {
