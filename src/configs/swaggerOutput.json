@@ -5692,38 +5692,25 @@
             "pattern": "^[0-9a-fA-F]{24}$"
           },
           {
-            "name": "variant",
+            "name": "variants",
             "in": "body",
             "required": true,
             "schema": {
               "type": "object",
               "properties": {
-                "color": {
-                  "type": "string",
-                  "description": "Màu sắc biến thể (tối thiểu 2 ký tự, tối đa 50 ký tự)",
-                  "minLength": 2,
-                  "maxLength": 50
-                },
-                "size": {
-                  "type": "string",
-                  "description": "Kích thước biến thể (tối thiểu 1 ký tự, tối đa 20 ký tự)",
-                  "minLength": 1,
-                  "maxLength": 20
-                },
-                "price": {
-                  "type": "number",
-                  "description": "Giá biến thể (phải >= 0, tối đa 999999999)",
-                  "minimum": 0,
-                  "maximum": 999999999
-                },
-                "stock": {
-                  "type": "number",
-                  "description": "Số lượng tồn kho biến thể (phải >= 0, tối đa 999999)",
-                  "minimum": 0,
-                  "maximum": 999999
+                "variants": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "size": { "type": "string", "example": "38" },
+                      "stock": { "type": "number", "example": 10 }
+                     
+                    },
+                    "required": ["size", "stock"]
+                  }
                 }
-              },
-              "required": ["color", "size", "price", "stock"]
+              }
             }
           }
         ],
@@ -5885,23 +5872,11 @@
             "schema": {
               "type": "object",
               "properties": {
-                "color": {
-                  "type": "string",
-                  "description": "Màu sắc biến thể (tối thiểu 2 ký tự, tối đa 50 ký tự)",
-                  "minLength": 2,
-                  "maxLength": 50
-                },
                 "size": {
                   "type": "string",
                   "description": "Kích thước biến thể (tối thiểu 1 ký tự, tối đa 20 ký tự)",
                   "minLength": 1,
                   "maxLength": 20
-                },
-                "price": {
-                  "type": "number",
-                  "description": "Giá biến thể (phải >= 0, tối đa 999999999)",
-                  "minimum": 0,
-                  "maximum": 999999999
                 },
                 "stock": {
                   "type": "number",
