@@ -5117,7 +5117,7 @@
             "name": "description",
             "in": "formData",
             "type": "string",
-            "required": true,
+            "required": false,
             "description": "Mô tả sản phẩm (tối thiểu 10 ký tự, tối đa 1000 ký tự)",
             "minLength": 10,
             "maxLength": 1000
@@ -5132,35 +5132,27 @@
             "maximum": 999999999
           },
           {
-            "name": "category",
+            "name": "product_category_id",
             "in": "formData",
             "type": "string",
-            "required": true,
+            "required": false,
             "description": "ID danh mục (MongoDB ObjectId, 24 ký tự hex)",
             "pattern": "^[0-9a-fA-F]{24}$"
           },
           {
-            "name": "images",
+            "name": "thumbnails",
             "in": "formData",
             "type": "file",
             "required": false,
             "description": "Ảnh sản phẩm (định dạng: jpg, jpeg, png, gif, webp; kích thước tối đa: 5MB mỗi ảnh)"
           },
-          {
-            "name": "stock",
-            "in": "formData",
-            "type": "number",
-            "required": true,
-            "description": "Số lượng tồn kho (phải >= 0, tối đa 999999)",
-            "minimum": 0,
-            "maximum": 999999
-          },
+          
           {
             "name": "status",
             "in": "formData",
             "type": "string",
             "enum": ["active", "inactive"],
-            "required": true,
+            "required": false,
             "description": "Trạng thái sản phẩm (active: hoạt động, inactive: không hoạt động)"
           }
         ],
@@ -5372,7 +5364,7 @@
             "maximum": 999999999
           },
           {
-            "name": "category",
+            "name": "product_category_id",
             "in": "formData",
             "type": "string",
             "required": false,
@@ -5380,20 +5372,11 @@
             "pattern": "^[0-9a-fA-F]{24}$"
           },
           {
-            "name": "images",
+            "name": "thumbnails",
             "in": "formData",
             "type": "file",
             "required": false,
             "description": "Ảnh sản phẩm (định dạng: jpg, jpeg, png, gif, webp; kích thước tối đa: 5MB mỗi ảnh)"
-          },
-          {
-            "name": "stock",
-            "in": "formData",
-            "type": "number",
-            "required": false,
-            "description": "Số lượng tồn kho (phải >= 0, tối đa 999999)",
-            "minimum": 0,
-            "maximum": 999999
           },
           {
             "name": "status",
