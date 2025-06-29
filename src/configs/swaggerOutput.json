@@ -3831,7 +3831,7 @@
         }
       }
     },
-    "/shipping-method": {
+    "/shipping-methods": {
       "get": {
         "tags": ["Shipping Methods"],
         "summary": "Lấy danh sách phương thức vận chuyển",
@@ -4062,7 +4062,7 @@
         }
       }
     },
-    "/shipping-method/{id}": {
+    "/shipping-methods/{id}": {
       "get": {
         "tags": ["Shipping Methods"],
         "summary": "Lấy thông tin phương thức vận chuyển theo ID",
