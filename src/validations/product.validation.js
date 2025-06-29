@@ -5,9 +5,6 @@ import mongoose from "mongoose";
 const variantSchema = z.object({
   size: z.string().min(1, "Kích thước không được để trống"),
   stock: z.coerce.number().int().min(0, "Số lượng tồn kho phải lớn hơn hoặc bằng 0"),
-  price: z.number().min(0, "Giá phải lớn hơn hoặc bằng 0").optional(),
-  discount: z.number().min(0, "Giảm giá phải lớn hơn hoặc bằng 0").optional(),
-  thumbnails: z.array(z.string()).optional(),
 });
 
 // Schema cho danh sách biến thể
