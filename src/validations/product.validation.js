@@ -67,8 +67,6 @@ const productBaseSchema = z.object({
       z.object({
         url: z.string().url("URL ảnh không hợp lệ"),
         position: z.number(),
-        createdAt: z.date(),
-        updatedAt: z.date(),
       })
     )
     .optional(),
