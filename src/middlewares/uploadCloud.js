@@ -101,3 +101,46 @@ export const uploadMultipleCloud = async (req, res, next) => {
     });
   }
 };
+
+export const uploadBannerCloud = async (req, res, next) => {
+  if (!req.file) {
+    return next();
+  }
+
+  const streamUpload = (req) => {
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "banners",
+          resource_type: "auto"
+        },
+        (error, result) => {
+          if (result) {
+            resolve(result);
+          } else {
+            reject(error);
+          }
+        }
+      );
+
+      try {
+        const readStream = streamifier.createReadStream(req.file.buffer);
+        readStream.pipe(stream);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+  try {
+    const result = await streamUpload(req);
+    req.body[req.file.fieldname] = result.url;
+    next();
+  } catch (error) {
+    return res.status(500).json({ 
+      status: false,
+      message: 'Lỗi khi tải ảnh lên', 
+      error: error.message 
+    });
+  }
+};
