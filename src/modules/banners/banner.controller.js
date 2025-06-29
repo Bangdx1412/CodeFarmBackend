@@ -5,9 +5,14 @@ import { BANNER_MESSAGES } from "../../constants/message.js";
 export const addBanner = async (req, res) => {
   try {
     const { title, link, description, isActive } = req.body;// Lấy dữ liệu từ body
-   if (!title) return res.status(400).json({ error: BANNER_MESSAGES.TITLE_REQUIRED });
-    const image = req.file ? req.file.path : req.body.image;
-    const banner = await Banner.create({ title, image, link, description, isActive });
+    if (!title) return res.status(400).json({ error: BANNER_MESSAGES.TITLE_REQUIRED });
+    
+    const bannerData = { title, link, description, isActive };
+    if (req.body.image) {
+      bannerData.image = req.body.image; // URL từ Cloudinary đã được uploadCloud middleware xử lý
+    }
+    
+    const banner = await Banner.create(bannerData);
     res.status(201).json({ message: BANNER_MESSAGES.CREATE_SUCCESS, data: banner });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -50,7 +55,12 @@ export const updateBanner = async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = { ...req.body };
-    if (req.file) updateData.image = req.file.path;
+    
+    // Chỉ cập nhật image nếu có
+    if (req.body.image) {
+      updateData.image = req.body.image; // URL từ Cloudinary
+    }
+    
     const banner = await Banner.findByIdAndUpdate(id, updateData, { new: true });
     if (!banner) return res.status(404).json({ error: BANNER_MESSAGES.NOT_FOUND });
     res.json({ message: BANNER_MESSAGES.UPDATE_SUCCESS, data: banner });
