@@ -208,53 +208,102 @@ const userController = {
     try {
       const { id } = req.params;
       const currentUserId = req.user.id;
-
-      // Check if ID is valid
+  
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({
-          status: false,
-          message: USER_MESSAGES.INVALID_ID,
-          statusCode: 400
-        });
+        return res.status(400).json({ status: false, message: USER_MESSAGES.INVALID_ID });
       }
-
-      // Prevent self-deletion
+  
       if (id === currentUserId.toString()) {
-        return res.status(400).json({
-          status: false,
-          message: USER_MESSAGES.CANNOT_DELETE_SELF,
-          statusCode: 400
-        });
+        return res.status(400).json({ status: false, message: USER_MESSAGES.CANNOT_DELETE_SELF });
       }
-
-      const user = await Account.findOneAndUpdate(
-        { _id: id, deleted: false },
-        { deleted: true, deletedAt: new Date() },
-        { new: true }
-      );
-
+  
+      const user = await Account.findById(id);
       if (!user) {
-        return res.status(404).json({
+        return res.status(404).json({ status: false, message: USER_MESSAGES.NOT_FOUND });
+      }
+  
+      // Chỉ admin được xóa, và không được xóa admin khác
+      if (!req.user.admin || user.admin) {
+        return res.status(403).json({
           status: false,
-          message: USER_MESSAGES.NOT_FOUND,
-          statusCode: 404
+          message: "Không có quyền xóa người dùng này"
         });
       }
-
-      return res.status(200).json({
-        status: true,
-        message: USER_MESSAGES.SOFT_DELETE_SUCCESS,
-        statusCode: 200
+  
+      await Account.findByIdAndUpdate(id, {
+        $set: { deleted: true, updatedAt: new Date() }
       });
+  
+      return res.status(200).json({ status: true, message: USER_MESSAGES.SOFT_DELETE_SUCCESS });
+  
     } catch (error) {
-      console.error("Lỗi xóa tài khoản:", error);
-      return res.status(500).json({
-        status: false,
-        message: USER_MESSAGES.SERVER_ERROR,
-        statusCode: 500
-      });
+      console.error(error);
+      return res.status(500).json({ status: false, message: USER_MESSAGES.SERVER_ERROR });
     }
-  }
+  },
+  lockAccount: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const currentUserId = req.user.id;
+  
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ status: false, message: USER_MESSAGES.INVALID_ID });
+      }
+  
+      if (id === currentUserId.toString()) {
+        return res.status(400).json({ status: false, message: "Không thể tự khóa tài khoản của mình" });
+      }
+  
+      const user = await Account.findById(id);
+      if (!user) {
+        return res.status(404).json({ status: false, message: USER_MESSAGES.NOT_FOUND });
+      }
+  
+      // Chỉ admin được khóa, và không được khóa admin khác
+      if (!req.user.admin || user.admin) {
+        return res.status(403).json({ status: false, message: "Không có quyền khóa tài khoản này" });
+      }
+  
+      await Account.findByIdAndUpdate(id, {
+        $set: { status: 'inactive', updatedAt: new Date() }
+      });
+  
+      return res.status(200).json({ status: true, message: "Tài khoản đã bị khóa" });
+  
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ status: false, message: "Lỗi máy chủ" });
+    }
+  },
+  restoreUser: async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ status: false, message: USER_MESSAGES.INVALID_ID });
+      }
+  
+      const user = await Account.findById(id);
+      if (!user) {
+        return res.status(404).json({ status: false, message: USER_MESSAGES.NOT_FOUND });
+      }
+  
+      // Chỉ admin mới có quyền khôi phục
+      if (!req.user.admin) {
+        return res.status(403).json({ status: false, message: "Không có quyền khôi phục tài khoản" });
+      }
+  
+      await Account.findByIdAndUpdate(id, {
+        $set: { deleted: false, status: 'active', updatedAt: new Date() }
+      });
+  
+      return res.status(200).json({ status: true, message: "Khôi phục tài khoản thành công" });
+  
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ status: false, message: "Lỗi máy chủ" });
+    }
+  },
 };
 
 export default userController;

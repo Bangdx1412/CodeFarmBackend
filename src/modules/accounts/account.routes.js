@@ -37,5 +37,16 @@ routeUser.delete("/:id",
     checkPermission.isAdmin,
     userController.softDeleteUser
 );
-
+// Khôi phục lại tài khoản
+routeUser.put("/:id/restore",
+    checkPermission.verifyToken,
+    checkPermission.isAdmin,
+    userController.restoreUser
+)
+// Khóa tài khoản
+routeUser.put("/:id/lock",
+    checkPermission.verifyToken,
+    checkPermission.isAdmin,
+    userController.lockAccount
+)
 export default routeUser;

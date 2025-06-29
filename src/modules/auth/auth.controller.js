@@ -26,7 +26,7 @@ const authController = {
         });
       }
 
-      const checkEmail = await Account.findOne({ email, deleted: false });
+      const checkEmail = await Account.findOne({ email, status:"active"||"inactive", deleted: false });
       if (checkEmail) {
         return res.status(400).json({
           status: false,
@@ -34,7 +34,12 @@ const authController = {
           statusCode: 400
         });
       }
-
+      const checkEmailStatusPending = await Account.findOne({
+        email,status:"pending"
+      })
+      if(checkEmailStatusPending){
+        await Account.deleteOne(checkEmailStatusPending);
+      }
       const hashPassword = await bcrypt.hash(password, 10);
 
       const verificationToken = jwt.sign({ email }, JWT_SECRET, { expiresIn: '15m' });
@@ -244,11 +249,8 @@ const authController = {
         });
       }
       const account = await Account.findOne({ 
-        email, 
-        status: "active",
-        deleted: false 
+        email
       });
-
       if (!account) {
         return res.status(400).json({
           status: false,
@@ -256,6 +258,19 @@ const authController = {
           statusCode: 400
         });
       }
+      if(account.status=="inactive"){
+        return res.status(400).json({
+          status:false,
+          message:"Tài khoản của bạn đã bị khóa!"
+        })
+      }
+      if(account.deleted==true){
+        return res.status(400).json({
+          status:false,
+          message:"Tài khoản của bạn đã bị hủy vui lòng liên hệ admin để khôi phục lại!"
+        })
+      }
+      
       const isPasswordValid = await bcrypt.compare(password, account.password);
       if (!isPasswordValid) {
         return res.status(400).json({
