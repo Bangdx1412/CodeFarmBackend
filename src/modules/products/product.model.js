@@ -46,8 +46,6 @@ const productSchema = new mongoose.Schema(
       {
         url: String,
         position: Number,
-        createdAt: Date,
-        updatedAt: Date,
       },
     ],
     status: {
