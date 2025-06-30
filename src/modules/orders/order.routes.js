@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createOrder, getOrders, getOrderById, getOrdersAdmin, updateOrderStatus } from "./order.controller.js";
+import { createOrder, getOrders, getOrderById, getOrdersAdmin, updateOrderStatus, cancelOrder } from "./order.controller.js";
 import checkPermission from "../../middlewares/checkPermission.js";
 
 const router = Router();
@@ -17,5 +17,7 @@ router.get("/:id", checkPermission.verifyToken, getOrderById);
 
 // Cập nhật trạng thái đơn hàng (admin)
 router.put("/:id/status", checkPermission.verifyToken, checkPermission.isAdmin, updateOrderStatus);
+
+router.delete('/:id/cancel', checkPermission.verifyToken, cancelOrder);
 
 export default router; 

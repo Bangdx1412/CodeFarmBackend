@@ -383,3 +383,22 @@ export const updateOrderStatus = async (req, res) => {
     });
   }
 };
+
+export const cancelOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const userId = req.user._id;
+    const order = await Order.findOne({ _id: orderId, user_id: userId });
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
+    }
+    if (order.status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Đơn hàng đã xác nhận, không thể hủy' });
+    }
+    order.status = 'cancelled';
+    await order.save();
+    return res.json({ success: true, message: 'Đã hủy đơn hàng thành công', data: order });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
