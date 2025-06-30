@@ -3,8 +3,6 @@ import {
   addBanner,
   getBanners,
   updateBanner,
-  softDeleteBanner,
-  restoreBanner,
   deleteBanner
 } from "./banner.controller.js";
 import { validateRequest, validateParams } from "../../middlewares/validateRequest.js";
@@ -43,9 +41,7 @@ const checkFileCount = (req, res, next) => {
 
 router.post("/", upload.single("image"), checkFileCount, uploadBannerCloud, validateRequest(createBannerValidation), addBanner);           
 router.get("/", getBanners);                                 
-router.put("/:id", validateParams(bannerIdValidation), upload.single("image"), checkFileCount, uploadBannerCloud, validateRequest(updateBannerValidation), updateBanner);    
-router.patch("/restore/:id", validateParams(bannerIdValidation), restoreBanner);                   
-router.delete("/soft-delete/:id", validateParams(bannerIdValidation), softDeleteBanner);           
+router.patch("/:id", validateParams(bannerIdValidation), upload.single("image"), checkFileCount, uploadBannerCloud, validateRequest(updateBannerValidation), updateBanner);          
 router.delete("/:id", validateParams(bannerIdValidation), deleteBanner);                                                  
 
 export default router;

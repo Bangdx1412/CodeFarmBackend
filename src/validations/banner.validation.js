@@ -5,7 +5,10 @@ export const createBannerValidation = z.object({
   image: z.string().optional(),
   link: z.string().url("Link không hợp lệ").optional().or(z.literal("")),
   description: z.string().max(1000, "Mô tả không được vượt quá 1000 ký tự").optional().or(z.literal("")),
-  isActive: z.boolean().default(true)
+   isActive: z.preprocess(
+    (val) => val === 'true' || val === true, 
+    z.boolean()
+  ).optional().default(true)
 });
 
 export const updateBannerValidation = z.object({
@@ -13,7 +16,10 @@ export const updateBannerValidation = z.object({
   image: z.string().optional(),
   link: z.string().url("Link không hợp lệ").optional().or(z.literal("")),
   description: z.string().max(1000, "Mô tả không được vượt quá 1000 ký tự").optional().or(z.literal("")),
-  isActive: z.boolean().optional()
+   isActive: z.preprocess(
+    (val) => val === 'true' || val === true, 
+    z.boolean()
+  ).optional().default(true)
 });
 
 export const bannerIdValidation = z.object({

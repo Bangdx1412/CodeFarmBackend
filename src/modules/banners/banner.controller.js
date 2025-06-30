@@ -1,5 +1,6 @@
 import Banner from "./banner.model.js";
 import { BANNER_MESSAGES } from "../../constants/message.js";
+import mongoose from "mongoose";
 
 // Thêm banner 
 export const addBanner = async (req, res) => {
@@ -53,41 +54,19 @@ export const getBanners = async (req, res) => {
 // Cập nhật banner
 export const updateBanner = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id;
     const updateData = { ...req.body };
-    
-    // Chỉ cập nhật image nếu có
     if (req.body.image) {
-      updateData.image = req.body.image; // URL từ Cloudinary
+      updateData.image = req.body.image;
     }
-    
-    const banner = await Banner.findByIdAndUpdate(id, updateData, { new: true });
-    if (!banner) return res.status(404).json({ error: BANNER_MESSAGES.NOT_FOUND });
-    res.json({ message: BANNER_MESSAGES.UPDATE_SUCCESS, data: banner });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+    const banner = await Banner.findOne({ _id: id });
+    console.log("🚀 ~ updateBanner ~ banner:", banner);
 
-// Xóa mềm banner (chỉ set isActive = false)
-export const softDeleteBanner = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const banner = await Banner.findByIdAndUpdate(id, { isActive: false }, { new: true });
     if (!banner) return res.status(404).json({ error: BANNER_MESSAGES.NOT_FOUND });
-    res.json({ message: BANNER_MESSAGES.SOFT_DELETE_SUCCESS, data: banner });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
 
-// Khôi phục banner đã xóa mềm
-export const restoreBanner = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const banner = await Banner.findByIdAndUpdate(id, { isActive: true }, { new: true });
-    if (!banner) return res.status(404).json({ error: BANNER_MESSAGES.NOT_FOUND });
-    res.json({ message: BANNER_MESSAGES.RESTORE_SUCCESS, data: banner });
+    const updated = await Banner.findByIdAndUpdate(id, updateData, { new: true });
+
+    res.json({ message: BANNER_MESSAGES.UPDATE_SUCCESS, data: updated });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
