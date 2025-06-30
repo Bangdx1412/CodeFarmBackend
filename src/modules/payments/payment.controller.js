@@ -54,50 +54,65 @@ export const vnpayCallback = async (req, res) => {
       hashAlgorithm: 'SHA512',
       loggerFn: ignoreLogger,
     });
+
     const result = vnpay.verifyReturnUrl(req.query);
-    // 1. Kiểm tra order tồn tại
-    const order = await Order.findById(req.query.vnp_TxnRef);
+
+    const {
+      vnp_TxnRef,
+      vnp_Amount,
+      vnp_ResponseCode,
+      vnp_TransactionStatus,
+      vnp_TransactionNo,
+      vnp_SecureHash,
+      vnp_OrderInfo,
+      vnp_OrderType,
+      vnp_Locale,
+      vnp_CreateDate,
+      vnp_ExpireDate,
+    } = req.query;
+
+    // 1. Kiểm tra đơn hàng
+    const order = await Order.findById(vnp_TxnRef);
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
-    // 2. Bảo vệ callback lặp lại
+
+    // 2. Tránh cập nhật trùng
     if (order.paymentStatus === 'paid') {
       return res.json({ success: true, message: 'Đơn hàng đã thanh toán trước đó' });
     }
-    // 3. Lưu thông tin giao dịch vào bảng Payment
+
+    // 3. Lưu thông tin vào bảng payment
     await Payment.create({
-      order_id: req.query.vnp_TxnRef,
-      amount: Number(req.query.vnp_Amount) / 100,
+      order_id: vnp_TxnRef,
+      amount: Number(vnp_Amount) / 100,
       payment_method: 'vnpay',
-      status: req.query.vnp_ResponseCode === '00' && req.query.vnp_TransactionStatus === '00' ? 'paid' : 'failed',
-      transaction_id: req.query.vnp_TransactionNo,
+      status: vnp_ResponseCode === '00' && vnp_TransactionStatus === '00' ? 'paid' : 'failed',
+      transaction_id: vnp_TransactionNo,
       payment_date: new Date(),
-      vnp_TxnRef: req.query.vnp_TxnRef,
-      vnp_ResponseCode: req.query.vnp_ResponseCode,
-      vnp_SecureHash: req.query.vnp_SecureHash,
-      vnp_TransactionNo: req.query.vnp_TransactionNo,
-      vnp_OrderInfo: req.query.vnp_OrderInfo,
-      vnp_OrderType: req.query.vnp_OrderType,
-      vnp_Locale: req.query.vnp_Locale,
-      vnp_CreateDate: req.query.vnp_CreateDate,
-      vnp_ExpireDate: req.query.vnp_ExpireDate
+      vnp_TxnRef,
+      vnp_ResponseCode,
+      vnp_SecureHash,
+      vnp_TransactionNo,
+      vnp_OrderInfo,
+      vnp_OrderType,
+      vnp_Locale,
+      vnp_CreateDate,
+      vnp_ExpireDate,
     });
-    if (
-      result.code === '00' &&
-      req.query.vnp_ResponseCode === '00' &&
-      req.query.vnp_TransactionStatus === '00'
-    ) {
-      // Thanh toán thành công
-      await Order.findOneAndUpdate(
-        { _id: req.query.vnp_TxnRef },
-        { paymentStatus: 'paid', paymentTime: new Date() }
-      );
+
+    // 4. Nếu thanh toán thành công thì cập nhật đơn hàng
+    if (vnp_ResponseCode === '00' && vnp_TransactionStatus === '00') {
+      await Order.findByIdAndUpdate(vnp_TxnRef, {
+        paymentStatus: 'paid',
+        paymentTime: new Date(),
+      });
+
       return res.json({ success: true, message: 'Thanh toán thành công' });
     } else {
-      // Thanh toán thất bại
       return res.json({ success: false, message: 'Thanh toán thất bại', result });
     }
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
-}; 
+};
