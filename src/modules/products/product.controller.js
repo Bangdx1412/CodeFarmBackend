@@ -6,7 +6,7 @@ import cloudinary from "../../configs/cloudinary.js";
 import searchHelper from "../../helpers/search.js";
 import handlePagination from "../../helpers/pagination.js";
 import mongoose from "mongoose";
-
+import ProductReview from "../product-reviews/product-review.model.js";
 export const getProducts = async (req, res, next) => {
   try {
     const searchObject = searchHelper(req.query);
@@ -114,12 +114,17 @@ export const getProductById = async (req, res, next) => {
         .limit(4) // Giới hạn 4 sản phẩm liên quan
         .sort({ createdAt: -1 });
     }
-
+    // Lấy các đánh giá của sản phẩm này
+    const productReview = await ProductReview.find({product_id:id});
+    if(!productReview){
+      productReview = [];
+    }
     return sendSuccess(
       res,
       {
         product,
         relatedProducts,
+        productReview
       },
       "Lấy chi tiết sản phẩm thành công"
     );
