@@ -109,7 +109,12 @@ const userController = {
 
   getUsers: async (req, res) => {
     try {
-      const users = await Account.find({ deleted: false }).select("-password -token");
+      // ❌ Sai: lọc deleted: false
+      // const users = await Account.find({ deleted: false }).select("-password -token");
+  
+      // ✅ Đúng: lấy tất cả user (kể cả deleted:true)
+      const users = await Account.find().select("-password -token");
+      
       return res.status(200).json({
         status: true,
         message: USER_MESSAGES.GET_USERS_SUCCESS,
@@ -265,7 +270,7 @@ const userController = {
       }
   
       await Account.findByIdAndUpdate(id, {
-        $set: { status: 'inactive', updatedAt: new Date() }
+        $set: { deleted: true, status: 'inactive', updatedAt: new Date() }
       });
   
       return res.status(200).json({ status: true, message: "Tài khoản đã bị khóa" });
@@ -275,6 +280,7 @@ const userController = {
       return res.status(500).json({ status: false, message: "Lỗi máy chủ" });
     }
   },
+  
   restoreUser: async (req, res) => {
     try {
       const { id } = req.params;
@@ -305,5 +311,6 @@ const userController = {
     }
   },
 };
+
 
 export default userController;

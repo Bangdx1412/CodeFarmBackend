@@ -6210,7 +6210,7 @@
       "post": {
         "tags": ["Payments"],
         "summary": "Tạo QR thanh toán VNPay",
-        "description": "Tạo link thanh toán VNPay cho đơn hàng.\n\n**Thông tin thẻ test VNPay (NCB):**\n- Ngân hàng: NCB\n- Số thẻ: 9704198526191432198\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n- Mật khẩu OTP: 123456\n\nDùng các thông tin này để test thanh toán trên sandbox VNPay.",
+        "description": "Tạo link thanh toán VNPay cho đơn hàng đã được tạo trước đó.\n\n**Thông tin thẻ test VNPay (NCB):**\n\n**Thành công:**\n- Ngân hàng: NCB\n- Số thẻ: 9704198526191432198\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n- Mật khẩu OTP: 123456\n\n**Thẻ không đủ số dư:**\n- Ngân hàng: NCB\n- Số thẻ: 9704195798459170488\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n\n**Thẻ chưa kích hoạt:**\n- Ngân hàng: NCB\n- Số thẻ: 9704192181368742\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n\n**Thẻ bị khóa:**\n- Ngân hàng: NCB\n- Số thẻ: 9704193370791314\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n\n**Thẻ đã bị hết hạn:**\n- Ngân hàng: NCB\n- Số thẻ: 9704194841945513\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n\nDùng các thông tin này để test thanh toán trên sandbox VNPay.",
         "parameters": [
           {
             "name": "body",
@@ -6219,8 +6219,9 @@
             "schema": {
               "type": "object",
               "properties": {
-                "cartId": {"type": "string", "description": "ID giỏ hàng", "example": "665f2e8b7c261e6001234abc1"}
-              }
+                "orderId": {"type": "string", "description": "ID của đơn hàng đã tạo (order._id)", "example": "665f2e8b7c261e6001234abc1"}
+              },
+              "required": ["orderId"]
             }
           }
         ],
@@ -6232,11 +6233,12 @@
               "properties": {
                 "vnpUrl": {"type": "string", "example": "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?..."},
                 "vnp_TxnRef": {"type": "string", "example": "665f2e8b7c261e6001234abc1"},
-                "vnp_Amount": {"type": "number", "example": 36000000}
+                "vnp_Amount": {"type": "number", "example": 36000000},
+                "orderId": {"type": "string", "example": "665f2e8b7c261e6001234abc1"}
               }
             }
           },
-          "400": {"description": "Thiếu cartId hoặc cart không tồn tại"},
+          "400": {"description": "Thiếu orderId hoặc order không hợp lệ"},
           "500": {"description": "Lỗi server"}
         }
       }
@@ -6245,11 +6247,18 @@
       "get": {
         "tags": ["Payments"],
         "summary": "Callback xác thực thanh toán VNPay",
-        "description": "VNPay gọi về endpoint này để xác thực kết quả thanh toán.\n\n**Thông tin thẻ test VNPay (NCB):**\n- Ngân hàng: NCB\n- Số thẻ: 9704198526191432198\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n- Mật khẩu OTP: 123456\n\nDùng các thông tin này để test thanh toán trên sandbox VNPay.",
+        "description": "VNPay gọi về endpoint này để xác thực kết quả thanh toán.\n\n**Thông tin thẻ test VNPay (NCB):**\n\n**Thành công:**\n- Ngân hàng: NCB\n- Số thẻ: 9704198526191432198\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n- Mật khẩu OTP: 123456\n\n**Thẻ không đủ số dư:**\n- Ngân hàng: NCB\n- Số thẻ: 9704195798459170488\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n\n**Thẻ chưa kích hoạt:**\n- Ngân hàng: NCB\n- Số thẻ: 9704192181368742\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n\n**Thẻ bị khóa:**\n- Ngân hàng: NCB\n- Số thẻ: 9704193370791314\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n\n**Thẻ đã bị hết hạn:**\n- Ngân hàng: NCB\n- Số thẻ: 9704194841945513\n- Tên chủ thẻ: NGUYEN VAN A\n- Ngày phát hành: 07/15\n\nDùng các thông tin này để test thanh toán trên sandbox VNPay.",
         "parameters": [
-          {"name": "vnp_TxnRef", "in": "query", "type": "string", "example": "665f2e8b7c261e6001234abc1"},
-          {"name": "vnp_ResponseCode", "in": "query", "type": "string", "example": "00"},
-          {"name": "vnp_TransactionNo", "in": "query", "type": "string", "example": "123456789"}
+          {"name": "vnp_TxnRef", "in": "query", "type": "string", "required": true, "description": "OrderId của đơn hàng"},
+          {"name": "vnp_ResponseCode", "in": "query", "type": "string", "required": true},
+          {"name": "vnp_TransactionNo", "in": "query", "type": "string", "required": false},
+          {"name": "vnp_Amount", "in": "query", "type": "string", "required": false},
+          {"name": "vnp_SecureHash", "in": "query", "type": "string", "required": false},
+          {"name": "vnp_OrderInfo", "in": "query", "type": "string", "required": false},
+          {"name": "vnp_OrderType", "in": "query", "type": "string", "required": false},
+          {"name": "vnp_Locale", "in": "query", "type": "string", "required": false},
+          {"name": "vnp_CreateDate", "in": "query", "type": "string", "required": false},
+          {"name": "vnp_ExpireDate", "in": "query", "type": "string", "required": false}
         ],
         "responses": {
           "200": {
@@ -6263,6 +6272,7 @@
               }
             }
           },
+          "404": {"description": "Order không tồn tại"},
           "500": {"description": "Lỗi server"}
         }
       }

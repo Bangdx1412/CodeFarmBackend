@@ -230,7 +230,6 @@ export const getOrderById = async (req, res) => {
 
     const order = await Order.findOne({
       _id: req.params.id,
-      user_id: req.user._id
     });
 
     if (!order) {
