@@ -18,7 +18,7 @@ routeUser.post("/change-password",
     userController.changePassword
 );
 
-routeUser.post("/update-info-user", 
+routeUser.put("/update-info-user", 
     checkPermission.verifyToken,
     upload.single("avatar"),
     uploadCloud,
