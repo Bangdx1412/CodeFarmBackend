@@ -6,6 +6,8 @@ import createdHandler from "../../middlewares/createdHandler.js";
 import mongoose from "mongoose";
 import { validateCreateOrder, validateGetOrderById } from "../../validations/order.validation.js";
 import { ORDER_MESSAGES } from "../../constants/message.js";
+import Account from '../accounts/account.model.js';
+import { sendEmail } from '../../utils/sendMail.js';
 
 const ORDER_STATUS_ENUM = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
 const STATUS_FLOW = {
@@ -368,6 +370,62 @@ export const updateOrderStatus = async (req, res) => {
     }
     order.status = newStatus;
     await order.save();
+
+    // Gửi email thông báo trạng thái mới
+    try {
+      const user = await Account.findById(order.user_id);
+      if (user && user.email) {
+        const subject = `Cập nhật đơn hàng #${order._id}`;
+        const html = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #2c3e50;">Xin chào ${user.fullName || 'bạn'},</h2>
+        
+            <p>Chúng tôi xin thông báo rằng đơn hàng <strong>#${order._id}</strong> của bạn đã được cập nhật trạng thái mới: <strong style="color: green;">${newStatus}</strong>.</p>
+        
+            <h3 style="margin-top: 30px;">🛍️ Thông tin sản phẩm</h3>
+            ${order.orderItems.map(item => `
+              <div style="border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 10px;">
+                <img src="${item.imageUrl}" alt="${item.productName}" style="max-width: 80px; float: left; margin-right: 10px; border-radius: 5px;">
+                <div style="overflow: hidden;">
+                  <p><strong>${item.productName}</strong></p>
+                  <p>Size: ${item.variant.size}</p>
+                  <p>Số lượng: ${item.quantity}</p>
+                  <p>Giá: ${item.unitPrice.toLocaleString('vi-VN')}đ</p>
+                </div>
+                <div style="clear: both;"></div>
+              </div>
+            `).join('')}
+        
+            <h3>📦 Thông tin giao hàng</h3>
+            <p><strong>Họ tên:</strong> ${order.shippingAddress.fullName}</p>
+            <p><strong>Số điện thoại:</strong> ${order.shippingAddress.phone}</p>
+            <p><strong>Địa chỉ:</strong> ${order.shippingAddress.addressLine}, ${order.shippingAddress.ward}, ${order.shippingAddress.district}, ${order.shippingAddress.province}</p>
+        
+            <h3>💳 Thanh toán</h3>
+            <p><strong>Phương thức:</strong> ${order.payment_method.toUpperCase()}</p>
+            <p><strong>Trạng thái:</strong> ${order.paymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</p>
+        
+            <h3>💰 Tóm tắt đơn hàng</h3>
+            <ul style="list-style: none; padding: 0;">
+              <li><strong>Tạm tính:</strong> ${order.subtotal.toLocaleString('vi-VN')}đ</li>
+              <li><strong>Phí vận chuyển:</strong> ${order.shipping_fee.toLocaleString('vi-VN')}đ</li>
+              <li><strong>Giảm giá:</strong> ${order.discount.toLocaleString('vi-VN')}đ</li>
+              <li style="font-size: 16px;"><strong>Tổng cộng:</strong> <span style="color: #e74c3c;">${order.final_price.toLocaleString('vi-VN')}đ</span></li>
+            </ul>
+        
+            <p><strong>Thời gian cập nhật:</strong> ${new Date().toLocaleString('vi-VN')}</p>
+        
+            <hr style="margin: 30px 0;">
+            <p style="font-size: 14px; color: #555;">Nếu bạn có bất kỳ câu hỏi nào, xin vui lòng liên hệ với đội ngũ hỗ trợ của chúng tôi.</p>
+            <p style="font-size: 14px;">Trân trọng,<br/><strong>Đội ngũ hỗ trợ</strong></p>
+          </div>
+        `;
+        await sendEmail(user.email, subject, html);
+      }
+    } catch (mailErr) {
+      console.error('Gửi email thất bại:', mailErr.message);
+    }
+
     return res.status(200).json({
       status: true,
       message: "Cập nhật trạng thái đơn hàng thành công",
