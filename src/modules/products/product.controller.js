@@ -781,14 +781,6 @@ export const getProductVariant = async (req, res, next) => {
     return sendSuccess(
       res,
       {
-        product: {
-          _id: product._id,
-          title: product.title,
-          slug: product.slug,
-          price: product.price,
-          stock: product.stock,
-          product_category_id: product.product_category_id,
-        },
         variant,
         totalVariants: product.variants.length
       },
