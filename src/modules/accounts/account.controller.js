@@ -43,7 +43,7 @@ const userController = {
 
   updateUser: async (req, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user._id;
       const dataFromClient = req.body;
 
       const check = updateUserSchema.safeParse(dataFromClient);
@@ -133,7 +133,7 @@ const userController = {
 
   changePassword: async (req, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user._id;
       const dataFromClient = req.body;
 
       // Validate input data
@@ -212,7 +212,7 @@ const userController = {
   softDeleteUser: async (req, res) => {
     try {
       const { id } = req.params;
-      const currentUserId = req.user.id;
+      const currentUserId = req.user._id;
   
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ status: false, message: USER_MESSAGES.INVALID_ID });
