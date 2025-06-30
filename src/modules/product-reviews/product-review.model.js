@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 const productReviewSchema = new mongoose.Schema({
     user_id: String,
     product_id: String,
