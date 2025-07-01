@@ -3,7 +3,7 @@ import { createCoupon, updateCoupon,deleteCoupon, getAllCoupons, getCouponById }
 const router = express.Router();
 
 import checkPermission from "../../middlewares/checkPermission.js";
-router.get("/", checkPermission.verifyToken,checkPermission.isAdmin,getAllCoupons);
+router.get("/", checkPermission.verifyToken,getAllCoupons);
 router.get("/:id", checkPermission.verifyToken,checkPermission.isAdmin,getCouponById);
 router.post("/", checkPermission.verifyToken,checkPermission.isAdmin,createCoupon);
 router.put("/:id", checkPermission.verifyToken,checkPermission.isAdmin,updateCoupon);
