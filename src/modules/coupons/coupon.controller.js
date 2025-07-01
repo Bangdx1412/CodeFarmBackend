@@ -135,3 +135,28 @@ export const getAllCoupons = async (req, res) => {
     });
   }
 };
+
+// Lấy chi tiết coupon theo id
+export const getCouponById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const coupon = await Coupon.findById(id);
+    if (!coupon) {
+      return res.status(404).json({
+        status: false,
+        message: "Không tìm thấy mã giảm giá"
+      });
+    }
+    return res.status(200).json({
+      status: true,
+      message: "Lấy chi tiết mã giảm giá thành công",
+      data: coupon
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: COUPON_MESSAGES.SERVER_ERROR,
+      error: error.message
+    });
+  }
+};
