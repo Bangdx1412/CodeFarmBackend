@@ -114,7 +114,8 @@ export const createOrder = async (req, res) => {
 
     // Apply coupon if provided
     if (couponCode) {
-      const coupon = await Coupon.findOne({ code: couponCode, status: "active" });
+      // 1. Find the coupon by code
+      const coupon = await Coupon.findOne({ code: couponCode });
       if (!coupon) {
         await session.abortTransaction();
         return res.status(400).json({
@@ -123,7 +124,47 @@ export const createOrder = async (req, res) => {
           statusCode: 400
         });
       }
+      // 2. Check if user owns this coupon and it is not used
+      const couponUser = await (await import("../coupon-user/coupon-user.model.js")).default.findOne({ coupon_id: coupon._id, user_id: req.user._id });
+      if (!couponUser) {
+        await session.abortTransaction();
+        return res.status(400).json({
+          status: false,
+          message: "Bạn không sở hữu mã giảm giá này hoặc đã sử dụng.",
+          statusCode: 400
+        });
+      }
+      if (couponUser.is_used) {
+        await session.abortTransaction();
+        return res.status(400).json({
+          status: false,
+          message: "Mã giảm giá đã được sử dụng.",
+          statusCode: 400
+        });
+      }
+      // 3. Check expiry
+      const now = new Date();
+      if (now < coupon.start_date) {
+        await session.abortTransaction();
+        return res.status(400).json({
+          status: false,
+          message: "Mã giảm giá chưa đến thời gian sử dụng.",
+          statusCode: 400
+        });
+      }
+      if (now > coupon.end_date) {
+        await session.abortTransaction();
+        return res.status(400).json({
+          status: false,
+          message: "Mã giảm giá đã hết hạn sử dụng.",
+          statusCode: 400
+        });
+      }
+      // 4. Apply discount
       discount = (subtotal * coupon.discount_percent) / 100;
+      // 5. Mark coupon as used for this user
+      couponUser.is_used = true;
+      await couponUser.save({ session });
     }
 
     // Calculate final price
