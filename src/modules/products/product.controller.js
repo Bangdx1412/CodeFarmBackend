@@ -7,6 +7,7 @@ import searchHelper from "../../helpers/search.js";
 import handlePagination from "../../helpers/pagination.js";
 import mongoose from "mongoose";
 import ProductReview from "../product-reviews/product-review.model.js";
+import Account from "../accounts/account.model.js";
 export const getProducts = async (req, res, next) => {
   try {
     const searchObject = searchHelper(req.query);
@@ -114,17 +115,31 @@ export const getProductById = async (req, res, next) => {
         .limit(4) // Giới hạn 4 sản phẩm liên quan
         .sort({ createdAt: -1 });
     }
-    // Lấy các đánh giá của sản phẩm này
-    const productReview = await ProductReview.find({product_id:id});
-    if(!productReview){
-      productReview = [];
+    // Lấy các đánh giá của sản phẩm này, kèm tên và avatar user
+    const productReviews = await ProductReview.find({ product_id: id });
+    const userIds = productReviews.map(r => r.user_id);
+    let userMap = {};
+    if (userIds.length > 0) {
+      const users = await Account.find({ _id: { $in: userIds } }).select("_id fullName avatar");
+      userMap = users.reduce((acc, u) => { acc[u._id] = u; return acc; }, {});
     }
+    const reviews = productReviews.map(r => ({
+      _id: r._id,
+      rating: r.rating,
+      comment: r.comment,
+      review_date: r.review_date,
+      user: userMap[r.user_id] ? {
+        _id: userMap[r.user_id]._id,
+        fullName: userMap[r.user_id].fullName,
+        avatar: userMap[r.user_id].avatar
+      } : null
+    }));
     return sendSuccess(
       res,
       {
         product,
         relatedProducts,
-        productReview
+        reviews
       },
       "Lấy chi tiết sản phẩm thành công"
     );
