@@ -117,3 +117,21 @@ export const deleteCoupon = async (req, res) => {
     return res.status(500).json({ status: false, message: COUPON_MESSAGES.SERVER_ERROR, error: error.message });
   }
 };
+
+// Lấy tất cả coupon
+export const getAllCoupons = async (req, res) => {
+  try {
+    const coupons = await Coupon.find({});
+    return res.status(200).json({
+      status: true,
+      message: "Lấy danh sách mã giảm giá thành công",
+      data: coupons
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: COUPON_MESSAGES.SERVER_ERROR,
+      error: error.message
+    });
+  }
+};
