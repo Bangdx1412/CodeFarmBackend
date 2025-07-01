@@ -160,3 +160,39 @@ export const getCouponById = async (req, res) => {
     });
   }
 };
+
+// Lấy chi tiết coupon theo code và kiểm tra user đã dùng chưa
+export const getCouponByCode = async (req, res) => {
+  try {
+    const { code } = req.params;
+    const userId = req.user?._id;
+    const coupon = await Coupon.findOne({ code });
+    if (!coupon) {
+      return res.status(404).json({
+        status: false,
+        message: "Không tìm thấy mã giảm giá"
+      });
+    }
+    // Kiểm tra trạng thái sử dụng của user
+    let is_used = null;
+    if (userId) {
+      const CouponUser = (await import("../coupon-user/coupon-user.model.js")).default;
+      const couponUser = await CouponUser.findOne({ coupon_id: coupon._id, user_id: userId });
+      is_used = couponUser ? couponUser.is_used : null;
+    }
+    return res.status(200).json({
+      status: true,
+      message: "Lấy chi tiết mã giảm giá thành công",
+      data: {
+        coupon,
+        is_used
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: COUPON_MESSAGES.SERVER_ERROR,
+      error: error.message
+    });
+  }
+};
