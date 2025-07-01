@@ -6016,7 +6016,7 @@
       "post": {
         "tags": ["Orders"],
         "summary": "Tạo đơn hàng mới",
-        "description": "Tạo đơn hàng mới cho user đã đăng nhập",
+        "description": "Tạo đơn hàng mới cho user đã đăng nhập.\n\nNếu có mã giảm giá (couponCode):\n- Kiểm tra user có sở hữu mã này không (qua coupon-user).\n- Kiểm tra mã còn hạn sử dụng không.\n- Kiểm tra mã đã dùng chưa (is_used=false).\n- Nếu hợp lệ thì giảm giá cho đơn hàng và đánh dấu mã đã dùng (is_used=true).\n- Nếu không hợp lệ sẽ trả về lỗi tương ứng (không sở hữu, hết hạn, đã dùng, không tồn tại).",
         "parameters": [
           {
             "name": "body",
@@ -6025,21 +6025,8 @@
             "schema": {
               "type": "object",
               "properties": {
-                "shippingAddress": {
-                  "type": "object",
-                  "example": {
-                    "fullName": "Nguyễn Văn A",
-                    "phone": "0123456789",
-                    "addressLine": "123 Đường ABC",
-                    "ward": "Phường 1",
-                    "district": "Quận 1",
-                    "province": "TP.HCM"
-                  }
-                },
-                "shippingMethod": {
-                  "type": "object",
-                  "example": {"name": "Giao hàng nhanh", "fee": 30000}
-                },
+                "shippingAddress": { "type": "object", "example": { "fullName": "Nguyễn Văn A", "phone": "0123456789", "addressLine": "123 Đường ABC", "ward": "Phường 1", "district": "Quận 1", "province": "TP.HCM" } },
+                "shippingMethod": { "type": "object", "example": {"name": "Giao hàng nhanh", "fee": 30000} },
                 "payment_method": {"type": "string", "enum": ["cod", "vnpay"], "example": "vnpay"},
                 "items": {
                   "type": "array",
@@ -6094,7 +6081,17 @@
               }
             }
           },
-          "400": {"description": "Lỗi dữ liệu"},
+          "400": {
+            "description": "Lỗi dữ liệu hoặc mã giảm giá không hợp lệ",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {"type": "boolean", "example": false},
+                "message": {"type": "string", "example": "Mã giảm giá đã hết hạn sử dụng hoặc không hợp lệ"},
+                "statusCode": {"type": "number", "example": 400}
+              }
+            }
+          },
           "500": {"description": "Lỗi server"}
         }
       },
