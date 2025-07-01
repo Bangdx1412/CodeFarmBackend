@@ -28,11 +28,10 @@ export const PRODUCT_MESSAGES = {
 export const COUPON_MESSAGES = {
   CREATE_SUCCESS: "Tạo mã giảm giá thành công",
   UPDATE_SUCCESS: "Cập nhật mã giảm giá thành công",
-  CODE_EXISTS: "Mã coupon đã tồn tại",
-  NOT_FOUND: "Không tìm thấy coupon",
-  SERVER_ERROR: "Lỗi server"
+  CODE_EXISTS: "Mã giảm giá đã tồn tại",
+  NOT_FOUND: "Không tìm thấy mã giảm giá",
+  SERVER_ERROR: "Có lỗi xảy ra từ phía server"
 };
-
 export const CART_MESSAGES = {
   ADD_SUCCESS: "Thêm vào giỏ hàng thành công",
   UPDATE_SUCCESS: "Cập nhật giỏ hàng thành công",

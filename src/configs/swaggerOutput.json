@@ -6364,6 +6364,233 @@
           }
         }
       }
+    },
+    "/coupon": {
+      "post": {
+        "tags": ["Coupons"],
+        "summary": "Tạo mã giảm giá",
+        "description": "Tạo mới một mã giảm giá. Nếu is_unlimited = true thì không cần nhập max_uses.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["code", "discount_percent", "start_date", "end_date", "is_unlimited"],
+              "properties": {
+                "code": { "type": "string", "minLength": 6, "example": "GIAM10K", "description": "Mã coupon (ít nhất 6 ký tự, duy nhất)" },
+                "discount_percent": { "type": "integer", "minimum": 1, "maximum": 100, "example": 10, "description": "Phần trăm giảm giá (1-100%)" },
+                "start_date": { "type": "string", "format": "date-time", "example": "2025-07-01T00:00:00Z", "description": "Ngày bắt đầu hiệu lực" },
+                "end_date": { "type": "string", "format": "date-time", "example": "2025-08-01T23:59:59Z", "description": "Ngày kết thúc hiệu lực" },
+                "is_unlimited": { "type": "boolean", "example": false, "description": "Có giới hạn lượt dùng không" },
+                "max_uses": { "type": "integer", "minimum": 0, "example": 100, "description": "Số lượt sử dụng tối đa (bắt buộc nếu is_unlimited=false)" }
+              }
+            },
+            "x-examples": {
+              "Có giới hạn lượt dùng": {
+                "code": "GIAM10K",
+                "discount_percent": 10,
+                "start_date": "2025-07-01T00:00:00Z",
+                "end_date": "2025-08-01T23:59:59Z",
+                "is_unlimited": false,
+                "max_uses": 100
+              },
+              "Không giới hạn lượt dùng": {
+                "code": "SALE50",
+                "discount_percent": 50,
+                "start_date": "2025-07-01T00:00:00Z",
+                "end_date": "2025-12-31T23:59:59Z",
+                "is_unlimited": true
+              },
+              "Mã không hợp lệ": {
+                "code": "S",
+                "discount_percent": 110,
+                "start_date": "2025-07-10T00:00:00Z",
+                "end_date": "2025-07-05T00:00:00Z",
+                "is_unlimited": false,
+                "max_uses": 0
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Tạo coupon thành công",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "boolean", "example": true },
+                "message": { "type": "string", "example": "Tạo coupon thành công" },
+                "data": { "$ref": "#/definitions/Coupon" }
+              }
+            }
+          },
+          "400": { "description": "Lỗi dữ liệu hoặc mã đã tồn tại" },
+          "500": { "description": "Lỗi server" }
+        }
+      }
+    },
+    "/coupon/{id}": {
+      "put": {
+        "tags": ["Coupons"],
+        "summary": "Cập nhật mã giảm giá",
+        "description": "Cập nhật thông tin mã giảm giá theo id.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "string", "description": "ID coupon (MongoDB ObjectId)" },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": { "type": "string", "minLength": 6, "example": "GIAM10K" },
+                "discount_percent": { "type": "integer", "minimum": 1, "maximum": 100, "example": 10 },
+                "start_date": { "type": "string", "format": "date-time", "example": "2025-07-01T00:00:00Z" },
+                "end_date": { "type": "string", "format": "date-time", "example": "2025-08-01T23:59:59Z" },
+                "is_unlimited": { "type": "boolean", "example": false },
+                "max_uses": { "type": "integer", "minimum": 0, "example": 100 }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cập nhật coupon thành công",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "boolean", "example": true },
+                "message": { "type": "string", "example": "Cập nhật coupon thành công" },
+                "data": { "$ref": "#/definitions/Coupon" }
+              }
+            }
+          },
+          "400": { "description": "Lỗi dữ liệu hoặc mã đã tồn tại" },
+          "404": { "description": "Không tìm thấy coupon" },
+          "500": { "description": "Lỗi server" }
+        }
+      },
+      "delete": {
+        "tags": ["Coupons"],
+        "summary": "Xóa mã giảm giá",
+        "description": "Xóa vĩnh viễn một mã giảm giá theo id.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "string", "description": "ID coupon (MongoDB ObjectId)" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa coupon thành công",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "boolean", "example": true },
+                "message": { "type": "string", "example": "Xóa mã giảm giá thành công" },
+                "data": { "$ref": "#/definitions/Coupon" }
+              }
+            }
+          },
+          "404": { "description": "Không tìm thấy coupon" },
+          "500": { "description": "Lỗi server" }
+        }
+      }
+    },
+    "/coupon-user/add": {
+      "post": {
+        "tags": ["CouponUser"],
+        "summary": "Thêm mã giảm giá vào tài khoản user",
+        "description": "User thêm mã giảm giá vào danh sách của mình. Nếu mã hợp lệ sẽ trừ max_uses của coupon đi 1. Một user chỉ được thêm mã đó 1 lần.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["coupon_id"],
+              "properties": {
+                "coupon_id": { "type": "string", "example": "665f2e8b7c261e6001234abc1", "description": "ID của mã giảm giá" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Thêm mã giảm giá thành công",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "boolean", "example": true },
+                "message": { "type": "string", "example": "Thêm mã giảm giá thành công" }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi dữ liệu hoặc đã thêm mã này rồi hoặc mã hết hạn/hết lượt",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "boolean", "example": false },
+                "message": { "type": "string", "example": "Bạn đã thêm mã này rồi" }
+              }
+            }
+          },
+          "404": { "description": "Không tìm thấy mã giảm giá" },
+          "500": { "description": "Lỗi server" }
+        }
+      }
+    },
+    "/coupon-user/cleanup": {
+      "get": {
+        "tags": ["CouponUser"],
+        "summary": "Dọn dẹp mã giảm giá hết hạn chưa dùng",
+        "description": "Chỉ admin mới gọi được. Xóa các mã giảm giá đã hết hạn mà user chưa dùng khỏi danh sách coupon-user.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Dọn dẹp thành công hoặc không có mã nào cần dọn dẹp",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "boolean", "example": true },
+                "message": { "type": "string", "example": "Đã dọn dẹp mã hết hạn chưa dùng" },
+                "deleted": { "type": "integer", "example": 2 }
+              }
+            }
+          },
+          "500": { "description": "Lỗi server" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Coupon": {
+      "type": "object",
+      "properties": {
+        "_id": { "type": "string", "example": "665f2e8b7c261e6001234abc1" },
+        "code": { "type": "string", "example": "GIAM10K" },
+        "discount_percent": { "type": "integer", "example": 10 },
+        "start_date": { "type": "string", "format": "date-time", "example": "2025-07-01T00:00:00Z" },
+        "end_date": { "type": "string", "format": "date-time", "example": "2025-08-01T23:59:59Z" },
+        "is_unlimited": { "type": "boolean", "example": false },
+        "max_uses": { "type": "integer", "example": 100 },
+        "createdAt": { "type": "string", "format": "date-time", "example": "2024-06-01T10:00:00.000Z" },
+        "updatedAt": { "type": "string", "format": "date-time", "example": "2024-06-01T10:00:00.000Z" }
+      }
+    },
+    "CouponUser": {
+      "type": "object",
+      "properties": {
+        "_id": { "type": "string", "example": "665f2e8b7c261e6001234abc9" },
+        "coupon_id": { "type": "string", "example": "665f2e8b7c261e6001234abc1" },
+        "user_id": { "type": "string", "example": "665f2e8b7c261e6001234abca" },
+        "is_used": { "type": "boolean", "example": false }
+      }
     }
   }
 }

@@ -12,6 +12,7 @@ import bannerRoute from "../modules/banners/banner.routes.js";
 import Contact from "../modules/contacts/contact.routes.js";
 import paymentRoute from "../modules/payments/payment.route.js";
 import productReviewRoutes from '../modules/product-reviews/product-review.routes.js';
+import couponUserRoute from "../modules/coupon-user/coupon-user.routes.js";
 
 const routes = Router();
 
@@ -28,5 +29,6 @@ routes.use("/banners", bannerRoute);
 routes.use("/contact", Contact);
 routes.use("/payments", paymentRoute);
 routes.use('/product-reviews', productReviewRoutes);
+routes.use("/coupon-user", couponUserRoute);
 
 export default routes;
